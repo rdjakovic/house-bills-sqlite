@@ -122,5 +122,47 @@ public sealed class RepositoryTests(SqliteFixture fixture)
         loaded.PaidAmount.ShouldBe(amount);
     }
 
+    [Theory]
+    [InlineData("ELECTRIC", "Electricity")]
+    [InlineData("power co", "Electricity")]
+    [InlineData("insur", "Home cover")]
+    [InlineData("meter 42", "Water")]
+    [InlineData("100%", "Discount")]
+    public async Task ListAsync_Search_MatchesDescriptionPayeeCategoryOrNotesIgnoringCase(string search, string expected)
+    {
+        var tag = Guid.NewGuid().ToString("N");
+        var payees = fixture.Get<IPayeeRepository>();
+        var power = new Payee($"Power Co {tag}", null, null);
+        var other = new Payee($"Other {tag}", null, null);
+        await payees.AddAsync(power, Ct);
+        await payees.AddAsync(other, Ct);
+        var bills = fixture.Get<IBillRepository>();
+        await bills.AddAsync(new Bill("Electricity", power.Id, 1, 10m, SqliteFixture.Today, null), Ct);
+        await bills.AddAsync(new Bill("Home cover", other.Id, 4, 10m, SqliteFixture.Today, null), Ct);
+        await bills.AddAsync(new Bill("Water", other.Id, 1, 10m, SqliteFixture.Today, "Meter 42"), Ct);
+        await bills.AddAsync(new Bill("Discount", other.Id, 7, 10m, SqliteFixture.Today, "100% off"), Ct);
+        await bills.AddAsync(new Bill("Rent", other.Id, 2, 10m, SqliteFixture.Today, "1000 off"), Ct);
+
+        var found = new List<BillListItem>();
+        foreach (var payeeId in new[] { power.Id, other.Id })
+        {
+            found.AddRange(await bills.ListAsync(new BillFilter(null, null, PayeeId: payeeId, Search: search), SqliteFixture.Today, Ct));
+        }
+
+        found.ShouldHaveSingleItem().Description.ShouldBe(expected);
+    }
+
+    [Fact]
+    public async Task ListAsync_BlankSearch_DoesNotFilter()
+    {
+        var payee = new Payee(Unique("Blank search"), null, null);
+        await fixture.Get<IPayeeRepository>().AddAsync(payee, Ct);
+        await fixture.Get<IBillRepository>().AddAsync(new Bill("Any", payee.Id, 1, 10m, SqliteFixture.Today, null), Ct);
+
+        var result = await fixture.Get<IBillRepository>().ListAsync(new BillFilter(null, null, PayeeId: payee.Id, Search: "   "), SqliteFixture.Today, Ct);
+
+        result.ShouldHaveSingleItem();
+    }
+
     private static string Unique(string name) => $"{name} {Guid.NewGuid():N}";
 }

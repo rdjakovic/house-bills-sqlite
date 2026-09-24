@@ -10,11 +10,13 @@ Built with .NET 10, WPF (Fluent theme) and SQLite. Everything stays on your own 
 
 ## Features
 
-- **Bills** — add, edit and delete bills; record payments (date and amount) or mark a bill unpaid again. Filter by status, due-date range, category or payee. Each bill is shown as **Overdue**, **Due soon** (within 7 days), **Upcoming** or **Paid**, with totals and the outstanding amount.
+- **Bills** — add, edit and delete bills; record payments (date and amount) or mark a bill unpaid again. Filter by status, due-date range, category or payee, or search by text (description, payee, category or notes). Each bill is shown as **Overdue**, **Due soon** (within 7 days), **Upcoming** or **Paid**, with totals and the outstanding amount.
 - **Recurring bills** — templates that repeat weekly, monthly, quarterly or yearly, with an optional end date. Bills are generated automatically for the next 31 days when the app starts (and on demand). Pausing and resuming a template doesn't back-fill the paused period; deleting a generated bill doesn't bring it back.
 - **Payees and categories** — names are unique; anything still in use can't be deleted. Seven starter categories are created with the database.
 - **Reports** — monthly totals for a year compared with the previous year, and totals per category.
 - **English or Srpski** — choose the language under **Settings** (bottom of the menu); it switches immediately and is remembered. Serbian also uses Serbian formats (`1.234,56 RSD`, `24.9.2026.`); English follows your Windows regional settings.
+- **Backups** — a backup every day (the last 14 are kept), **Back up now…** to any folder or USB stick, and **Restore from backup…** in **Settings**. Restoring first saves your current data as a safety copy.
+- **Keyboard and mouse shortcuts** — double-click or **Enter** on a row to edit it, **Delete** to delete it, **Ctrl+N** for a new item, **Esc** to close the editor, **F5** to refresh the bills list. Click a column header to sort.
 - **Light or dark** — under **Settings**, choose *Same as Windows* (default), *Light* or *Dark*; it switches immediately and is remembered.
 - **No lost edits** — if a record was changed in the meantime (e.g. in a second HouseBills window), you get a "reload and try again" message instead of silently overwriting that change.
 
@@ -31,7 +33,9 @@ Nothing else is installed: no .NET, no database server.
 **Your data**
 
 - Your bills are in one file: `%LOCALAPPDATA%\HouseBills\HouseBills.db`. Each Windows user on the PC has their own.
-- **Backup / moving to another PC:** close HouseBills, then copy that file (restore by copying it back to the same place). While the app is running — or if it didn't close normally — recent changes can also be in `HouseBills.db-wal` next to it; SQLite merges them back on the next start, so keep those files together.
+- **Backups:** HouseBills makes one automatically each day at startup in `%LOCALAPPDATA%\HouseBills\Backups` and keeps the last 14. For a copy somewhere safer (USB stick, OneDrive), use **Settings → Back up now…**; this works while the app is running.
+- **Restore / moving to another PC:** on the other PC, install HouseBills and use **Settings → Restore from backup…** with your backup file. Your current data is first saved in the backup folder as `HouseBills-before-restore-….db`. Backups from an older HouseBills are upgraded automatically; a backup from a newer version is refused (update HouseBills first).
+- Before HouseBills upgrades your data to a newer format (after an update), it saves a copy as `HouseBills-before-upgrade-….db` in the backup folder.
 - Uninstalling HouseBills keeps your data, so reinstalling brings your bills back.
 - Log files are in `%LOCALAPPDATA%\HouseBills\Logs` (one file per day, kept for 30 days) — useful when something goes wrong.
 - Your language and theme choices are stored in `%LOCALAPPDATA%\HouseBills\preferences.json`. Without it, HouseBills starts in Serbian if Windows' display language is Serbian, otherwise in English.
@@ -116,6 +120,8 @@ Test installer changes on a **clean** Windows (e.g. Windows Sandbox), not only o
 |---|---|---|
 | `ConnectionStrings:HouseBills` | `Data Source=%LOCALAPPDATA%\HouseBills\HouseBills.db` | SQLite database file; environment variables are expanded. |
 | `Billing:GenerationLookaheadDays` | `31` | How far ahead recurring bills are generated (0–366). |
+| `Backup:Folder` | `%LOCALAPPDATA%\HouseBills\Backups` | Automatic backups and safety copies; environment variables are expanded. |
+| `Backup:AutomaticBackupsToKeep` | `14` | Daily automatic backups kept (1–365); only automatic ones are ever deleted. |
 | `FileLogging:Directory` | `%LOCALAPPDATA%\HouseBills\Logs` | Log folder; environment variables are expanded. |
 | `FileLogging:RetainedDays` | `30` | Log files older than this are deleted (1–3650). |
 | `UserPreferences:FilePath` | `%LOCALAPPDATA%\HouseBills\preferences.json` | Where the language and theme choices are saved (not in `appsettings.json` by default; handy to override in tests). |

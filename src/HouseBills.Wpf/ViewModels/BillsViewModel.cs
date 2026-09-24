@@ -73,6 +73,9 @@ public sealed partial class BillsViewModel : PageViewModel
     [ObservableProperty]
     public partial int? PayeeFilterId { get; set; }
 
+    [ObservableProperty]
+    public partial string? SearchText { get; set; }
+
     /// <summary>Sum of the listed bills' amounts.</summary>
     [ObservableProperty]
     public partial decimal TotalAmount { get; set; }
@@ -118,6 +121,7 @@ public sealed partial class BillsViewModel : PageViewModel
         DueTo = null;
         CategoryFilterId = null;
         PayeeFilterId = null;
+        SearchText = null;
         return RefreshAsync(cancellationToken);
     }
 
@@ -239,7 +243,7 @@ public sealed partial class BillsViewModel : PageViewModel
 
     private async Task LoadBillsAsync(CancellationToken cancellationToken)
     {
-        var filter = new BillFilter(DueFrom, DueTo, StatusFilter, CategoryFilterId, PayeeFilterId);
+        var filter = new BillFilter(DueFrom, DueTo, StatusFilter, CategoryFilterId, PayeeFilterId, SearchText);
         var bills = await _bills.ListAsync(filter, cancellationToken);
         Bills.Clear();
         foreach (var bill in bills)

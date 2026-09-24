@@ -1,7 +1,9 @@
+using HouseBills.Application.Backups;
 using HouseBills.Application.Common;
 using HouseBills.Application.Persistence;
 using HouseBills.Application.Preferences;
 using HouseBills.Application.Reports;
+using HouseBills.Infrastructure.Backups;
 using HouseBills.Infrastructure.Persistence;
 using HouseBills.Infrastructure.Persistence.Repositories;
 using HouseBills.Infrastructure.Preferences;
@@ -34,6 +36,12 @@ public static class DependencyInjection
         services.AddSingleton<IBillRepository, BillRepository>();
         services.AddSingleton<IReportQueries, ReportQueries>();
         services.AddSingleton<IDatabaseInitializer, SqliteDatabaseInitializer>();
+        services.AddSingleton<IDatabaseBackup, SqliteDatabaseBackup>();
+        services.AddOptions<BackupOptions>()
+            .Validate(
+                o => !string.IsNullOrWhiteSpace(o.Folder) && o.AutomaticBackupsToKeep is >= 1 and <= BackupOptions.MaxAutomaticBackupsToKeep,
+                $"{BackupOptions.SectionName}:Folder must be set and {BackupOptions.SectionName}:AutomaticBackupsToKeep must be between 1 and {BackupOptions.MaxAutomaticBackupsToKeep}.")
+            .ValidateOnStart();
 
         services.AddOptions<UserPreferencesOptions>();
         services.AddSingleton<IUserPreferencesStore, JsonUserPreferencesStore>();

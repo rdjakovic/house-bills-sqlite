@@ -80,4 +80,10 @@
   <data name="Conflict" xml:space="preserve">
     <value>This record was changed or deleted by someone else. Reload and try again.</value>
   </data>
+  <data name="Backup_NotABackup" xml:space="preserve">
+    <value>The selected file is not a HouseBills backup, or it is damaged. Nothing was changed.</value>
+  </data>
+  <data name="Backup_FromNewerVersion" xml:space="preserve">
+    <value>This backup was made by a newer version of HouseBills. Update HouseBills first, then restore it. Nothing was changed.</value>
+  </data>
 </root>

@@ -392,4 +392,45 @@
   <data name="Enum_AppTheme_Dark" xml:space="preserve">
     <value>Dark</value>
   </data>
+  <data name="Settings_Backup" xml:space="preserve">
+    <value>Backup</value>
+  </data>
+  <data name="Settings_BackupInfo" xml:space="preserve">
+    <value>HouseBills backs up your data automatically once a day and keeps the last {0} backups in this folder:</value>
+  </data>
+  <data name="Settings_BackupNow" xml:space="preserve">
+    <value>Back up now…</value>
+  </data>
+  <data name="Settings_Restore" xml:space="preserve">
+    <value>Restore from backup…</value>
+  </data>
+  <data name="Settings_BackupDone" xml:space="preserve">
+    <value>Backup saved to {0}.</value>
+  </data>
+  <data name="Settings_BackupFailed" xml:space="preserve">
+    <value>The backup could not be saved. Check that the location is writable and has free space.</value>
+  </data>
+  <data name="Settings_RestoreConfirmTitle" xml:space="preserve">
+    <value>Restore backup</value>
+  </data>
+  <data name="Settings_RestoreConfirm" xml:space="preserve">
+    <value>Replace all current data with the backup "{0}"?
+
+Your current data is first saved as a safety copy in the backup folder.</value>
+  </data>
+  <data name="Settings_RestoreDone" xml:space="preserve">
+    <value>The backup was restored.</value>
+  </data>
+  <data name="Settings_RestoreFailed" xml:space="preserve">
+    <value>The backup could not be restored. If your data was changed, the previous data is in the backup folder as HouseBills-before-restore-….db.</value>
+  </data>
+  <data name="Backup_FileType" xml:space="preserve">
+    <value>HouseBills backup</value>
+  </data>
+  <data name="Backup_AllFiles" xml:space="preserve">
+    <value>All files</value>
+  </data>
+  <data name="Bills_Search" xml:space="preserve">
+    <value>Search</value>
+  </data>
 </root>

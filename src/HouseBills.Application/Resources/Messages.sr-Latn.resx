@@ -80,4 +80,10 @@
   <data name="Conflict" xml:space="preserve">
     <value>Ovaj zapis je u međuvremenu izmenio ili obrisao neko drugi. Osvežite prikaz i pokušajte ponovo.</value>
   </data>
+  <data name="Backup_NotABackup" xml:space="preserve">
+    <value>Izabrana datoteka nije HouseBills rezervna kopija ili je oštećena. Ništa nije promenjeno.</value>
+  </data>
+  <data name="Backup_FromNewerVersion" xml:space="preserve">
+    <value>Ova rezervna kopija je napravljena novijom verzijom programa HouseBills. Prvo ažurirajte HouseBills, pa je onda vratite. Ništa nije promenjeno.</value>
+  </data>
 </root>

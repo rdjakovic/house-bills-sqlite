@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using HouseBills.Application;
 using HouseBills.Application.RecurringBills;
 using HouseBills.Infrastructure;
+using HouseBills.Infrastructure.Backups;
 using HouseBills.Infrastructure.Preferences;
 using HouseBills.Wpf.Localization;
 using HouseBills.Wpf.Services;
@@ -34,6 +35,7 @@ internal static class HostBuilderExtensions
         // Local SQLite mode. For API mode, swap this for an Api.Client registration.
         builder.Services.AddInfrastructure(builder.Configuration);
         builder.Services.AddOptions<UserPreferencesOptions>().BindConfiguration("UserPreferences");
+        builder.Services.AddOptions<BackupOptions>().BindConfiguration(BackupOptions.SectionName);
 
         builder.Services.AddPresentation();
         return builder.Build();

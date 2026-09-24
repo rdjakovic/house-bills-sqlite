@@ -1,6 +1,10 @@
+using System.Globalization;
+
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
+using HouseBills.Application.Backups;
+using HouseBills.Application.Common;
 using HouseBills.Presentation.Resources;
 using HouseBills.Wpf.Localization;
 using HouseBills.Wpf.Services;
@@ -10,18 +14,31 @@ using Microsoft.Extensions.Logging;
 
 namespace HouseBills.Wpf.ViewModels;
 
-/// <summary>User settings. Changing the language or theme applies it immediately and saves it for the next start.</summary>
+/// <summary>
+/// User settings. Changing the language or theme applies it immediately and saves it for the next start. Also backs up
+/// and restores the data.
+/// </summary>
 public sealed partial class SettingsViewModel : PageViewModel
 {
     private readonly ILocalizationService _localization;
     private readonly IThemeService _themes;
+    private readonly IDatabaseBackup _backup;
+    private readonly IClock _clock;
     private readonly ILogger<SettingsViewModel> _logger;
 
-    public SettingsViewModel(ILocalizationService localization, IThemeService themes, IDialogService dialogs, ILogger<SettingsViewModel> logger)
+    public SettingsViewModel(
+        ILocalizationService localization,
+        IThemeService themes,
+        IDatabaseBackup backup,
+        IClock clock,
+        IDialogService dialogs,
+        ILogger<SettingsViewModel> logger)
         : base(dialogs, logger)
     {
         _localization = localization;
         _themes = themes;
+        _backup = backup;
+        _clock = clock;
         _logger = logger;
         Languages = localization.Languages;
         SelectedLanguage = localization.Current;
@@ -39,6 +56,10 @@ public sealed partial class SettingsViewModel : PageViewModel
 
     [ObservableProperty]
     public partial AppTheme SelectedTheme { get; set; }
+
+    public string BackupInfo => string.Format(LocalizedStrings.FormattingCulture, Strings.Settings_BackupInfo, _backup.AutomaticBackupsToKeep);
+
+    public string BackupFolder => _backup.BackupFolder;
 
     public override Task OnNavigatedToAsync()
     {
@@ -78,6 +99,7 @@ public sealed partial class SettingsViewModel : PageViewModel
         }
 
         OnPropertyChanged(nameof(Title));
+        OnPropertyChanged(nameof(BackupInfo));
     }
 
     [RelayCommand]
@@ -92,6 +114,65 @@ public sealed partial class SettingsViewModel : PageViewModel
             // The theme is already applied for this session; only remembering it failed.
             _logger.LogError(ex, "Saving the theme preference failed.");
             Dialogs.ShowError(Strings.Settings_SaveFailed);
+        }
+    }
+
+    [RelayCommand]
+    private async Task BackUpNowAsync(CancellationToken cancellationToken)
+    {
+        var suggestedName = $"HouseBills-{_clock.Today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}.db";
+        if (Dialogs.PickBackupSaveLocation(suggestedName) is not { } path)
+        {
+            return;
+        }
+
+        IsBusy = true;
+        try
+        {
+            await _backup.BackupToAsync(path, cancellationToken);
+            Dialogs.ShowInfo(string.Format(LocalizedStrings.FormattingCulture, Strings.Settings_BackupDone, path));
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogError(ex, "Backup on request failed.");
+            Dialogs.ShowError(Strings.Settings_BackupFailed);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    [RelayCommand]
+    private async Task RestoreAsync(CancellationToken cancellationToken)
+    {
+        if (Dialogs.PickBackupToOpen(_backup.BackupFolder) is not { } path
+            || !Dialogs.Confirm(Strings.Settings_RestoreConfirmTitle, string.Format(LocalizedStrings.FormattingCulture, Strings.Settings_RestoreConfirm, System.IO.Path.GetFileName(path))))
+        {
+            return;
+        }
+
+        IsBusy = true;
+        try
+        {
+            var result = await _backup.RestoreAsync(path, cancellationToken);
+            if (result.IsSuccess)
+            {
+                Dialogs.ShowInfo(Strings.Settings_RestoreDone);
+            }
+            else
+            {
+                Dialogs.ShowError(result.Error!.Message);
+            }
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogError(ex, "Restore failed.");
+            Dialogs.ShowError(Strings.Settings_RestoreFailed);
+        }
+        finally
+        {
+            IsBusy = false;
         }
     }
 }

@@ -392,4 +392,45 @@
   <data name="Enum_AppTheme_Dark" xml:space="preserve">
     <value>Tamna</value>
   </data>
+  <data name="Settings_Backup" xml:space="preserve">
+    <value>Rezervna kopija</value>
+  </data>
+  <data name="Settings_BackupInfo" xml:space="preserve">
+    <value>HouseBills automatski pravi rezervnu kopiju podataka jednom dnevno i čuva poslednjih {0} u ovoj fascikli:</value>
+  </data>
+  <data name="Settings_BackupNow" xml:space="preserve">
+    <value>Napravi rezervnu kopiju…</value>
+  </data>
+  <data name="Settings_Restore" xml:space="preserve">
+    <value>Vrati iz rezervne kopije…</value>
+  </data>
+  <data name="Settings_BackupDone" xml:space="preserve">
+    <value>Rezervna kopija je sačuvana: {0}.</value>
+  </data>
+  <data name="Settings_BackupFailed" xml:space="preserve">
+    <value>Rezervna kopija nije mogla da se sačuva. Proverite da li je moguć upis na izabrano mesto i da li ima slobodnog prostora.</value>
+  </data>
+  <data name="Settings_RestoreConfirmTitle" xml:space="preserve">
+    <value>Vraćanje rezervne kopije</value>
+  </data>
+  <data name="Settings_RestoreConfirm" xml:space="preserve">
+    <value>Zameniti sve trenutne podatke rezervnom kopijom „{0}“?
+
+Trenutni podaci se prvo čuvaju kao sigurnosna kopija u fascikli rezervnih kopija.</value>
+  </data>
+  <data name="Settings_RestoreDone" xml:space="preserve">
+    <value>Rezervna kopija je vraćena.</value>
+  </data>
+  <data name="Settings_RestoreFailed" xml:space="preserve">
+    <value>Rezervna kopija nije mogla da se vrati. Ako su podaci promenjeni, prethodni podaci su u fascikli rezervnih kopija kao HouseBills-before-restore-….db.</value>
+  </data>
+  <data name="Backup_FileType" xml:space="preserve">
+    <value>HouseBills rezervna kopija</value>
+  </data>
+  <data name="Backup_AllFiles" xml:space="preserve">
+    <value>Sve datoteke</value>
+  </data>
+  <data name="Bills_Search" xml:space="preserve">
+    <value>Pretraga</value>
+  </data>
 </root>

@@ -1,3 +1,5 @@
+using HouseBills.Application.Backups;
+using HouseBills.Application.Common;
 using HouseBills.Wpf.Localization;
 using HouseBills.Wpf.Services;
 using HouseBills.Wpf.Theming;
@@ -18,12 +20,16 @@ public sealed class SettingsViewModelTests
     private readonly ILocalizationService _localization = Substitute.For<ILocalizationService>();
     private readonly IThemeService _themes = Substitute.For<IThemeService>();
     private readonly IDialogService _dialogs = Substitute.For<IDialogService>();
+    private readonly IDatabaseBackup _backup = Substitute.For<IDatabaseBackup>();
+    private readonly IClock _clock = Substitute.For<IClock>();
 
     public SettingsViewModelTests()
     {
         _localization.Languages.Returns([English, Serbian]);
         _localization.Current.Returns(English);
         _themes.Current.Returns(AppTheme.System);
+        _clock.Today.Returns(new DateOnly(2026, 9, 24));
+        _backup.BackupFolder.Returns(@"C:\Backups");
     }
 
     [Fact]
@@ -96,5 +102,82 @@ public sealed class SettingsViewModelTests
         _dialogs.Received(1).ShowError(Arg.Is<string>(m => !m.Contains("denied")));
     }
 
-    private SettingsViewModel CreateViewModel() => new(_localization, _themes, _dialogs, NullLogger<SettingsViewModel>.Instance);
+    [Fact]
+    public async Task BackUpNow_LocationChosen_BacksUpThereAndConfirms()
+    {
+        _dialogs.PickBackupSaveLocation("HouseBills-2026-09-24.db").Returns(@"D:\HouseBills-2026-09-24.db");
+        var viewModel = CreateViewModel();
+
+        await viewModel.BackUpNowCommand.ExecuteAsync(null);
+
+        await _backup.Received(1).BackupToAsync(@"D:\HouseBills-2026-09-24.db", Arg.Any<CancellationToken>());
+        _dialogs.Received(1).ShowInfo(Arg.Is<string>(m => m.Contains(@"D:\HouseBills-2026-09-24.db")));
+        viewModel.IsBusy.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task BackUpNow_DialogCancelled_DoesNothing()
+    {
+        _dialogs.PickBackupSaveLocation(Arg.Any<string>()).Returns((string?)null);
+        var viewModel = CreateViewModel();
+
+        await viewModel.BackUpNowCommand.ExecuteAsync(null);
+
+        await _backup.DidNotReceiveWithAnyArgs().BackupToAsync(default!, TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task BackUpNow_WriteFails_ShowsFriendlyError()
+    {
+        _dialogs.PickBackupSaveLocation(Arg.Any<string>()).Returns(@"E:\backup.db");
+        _backup.BackupToAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).ThrowsAsync(new IOException("device not ready"));
+        var viewModel = CreateViewModel();
+
+        await viewModel.BackUpNowCommand.ExecuteAsync(null);
+
+        _dialogs.Received(1).ShowError(Arg.Is<string>(m => !m.Contains("device not ready")));
+        viewModel.IsBusy.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task Restore_NotConfirmed_DoesNotRestore()
+    {
+        _dialogs.PickBackupToOpen(@"C:\Backups").Returns(@"C:\Backups\old.db");
+        _dialogs.Confirm(Arg.Any<string>(), Arg.Any<string>()).Returns(false);
+        var viewModel = CreateViewModel();
+
+        await viewModel.RestoreCommand.ExecuteAsync(null);
+
+        await _backup.DidNotReceiveWithAnyArgs().RestoreAsync(default!, TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task Restore_Confirmed_RestoresAndConfirms()
+    {
+        _dialogs.PickBackupToOpen(@"C:\Backups").Returns(@"C:\Backups\old.db");
+        _dialogs.Confirm(Arg.Any<string>(), Arg.Is<string>(m => m.Contains("old.db"))).Returns(true);
+        _backup.RestoreAsync(@"C:\Backups\old.db", Arg.Any<CancellationToken>()).Returns(Result.Success());
+        var viewModel = CreateViewModel();
+
+        await viewModel.RestoreCommand.ExecuteAsync(null);
+
+        await _backup.Received(1).RestoreAsync(@"C:\Backups\old.db", Arg.Any<CancellationToken>());
+        _dialogs.Received(1).ShowInfo(Arg.Any<string>());
+    }
+
+    [Fact]
+    public async Task Restore_NotABackup_ShowsServiceMessage()
+    {
+        _dialogs.PickBackupToOpen(Arg.Any<string>()).Returns(@"C:\notes.txt");
+        _dialogs.Confirm(Arg.Any<string>(), Arg.Any<string>()).Returns(true);
+        _backup.RestoreAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Result.Failure(Error.Validation("Not a backup.")));
+        var viewModel = CreateViewModel();
+
+        await viewModel.RestoreCommand.ExecuteAsync(null);
+
+        _dialogs.Received(1).ShowError("Not a backup.");
+        _dialogs.DidNotReceiveWithAnyArgs().ShowInfo(default!);
+    }
+
+    private SettingsViewModel CreateViewModel() => new(_localization, _themes, _backup, _clock, _dialogs, NullLogger<SettingsViewModel>.Instance);
 }

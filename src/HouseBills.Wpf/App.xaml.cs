@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Markup;
 using System.Windows.Threading;
 
+using HouseBills.Application.Backups;
 using HouseBills.Application.Common;
 using HouseBills.Presentation.Resources;
 using HouseBills.Wpf.Hosting;
@@ -66,6 +67,8 @@ public partial class App : System.Windows.Application
         // Close only after the main window is shown: WPF makes the first window shown the MainWindow, and closing
         // the MainWindow would end the application (ShutdownMode=OnMainWindowClose).
         startupWindow?.Close();
+
+        _ = CreateAutomaticBackupAsync(_host.Services);
     }
 
     protected override void OnExit(ExitEventArgs e)
@@ -108,6 +111,26 @@ public partial class App : System.Windows.Application
         }
 
         return startupWindow;
+    }
+
+    /// <summary>
+    /// Creates the daily automatic backup in the background, so it never delays startup. A failure is only logged:
+    /// the app works without it, and the user can still back up from Settings.
+    /// </summary>
+    private async Task CreateAutomaticBackupAsync(IServiceProvider services)
+    {
+        try
+        {
+            var backup = services.GetRequiredService<IDatabaseBackup>();
+            if (await Task.Run(() => backup.CreateAutomaticBackupAsync(CancellationToken.None)))
+            {
+                Logger?.LogInformation("Automatic backup created.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger?.LogError(ex, "Automatic backup failed.");
+        }
     }
 
     private void RegisterGlobalExceptionHandlers()

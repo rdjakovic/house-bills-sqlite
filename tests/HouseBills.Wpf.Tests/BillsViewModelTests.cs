@@ -54,6 +54,19 @@ public sealed class BillsViewModelTests
     }
 
     [Fact]
+    public async Task Refresh_SearchText_IsPassedToServiceAndClearedByClearFilters()
+    {
+        _viewModel.SearchText = "struja";
+
+        await _viewModel.RefreshCommand.ExecuteAsync(null);
+        await _viewModel.ClearFiltersCommand.ExecuteAsync(null);
+
+        await _bills.Received(1).ListAsync(Arg.Is<BillFilter>(f => f.Search == "struja"), Arg.Any<CancellationToken>());
+        _viewModel.SearchText.ShouldBeNull();
+        await _bills.Received(1).ListAsync(Arg.Is<BillFilter>(f => f.Search == null), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task OnNavigatedToAsync_ServiceThrows_ShowsFriendlyErrorAndClearsBusy()
     {
         _bills.ListAsync(Arg.Any<BillFilter>(), Arg.Any<CancellationToken>()).ThrowsAsync(new InvalidOperationException("db down"));
