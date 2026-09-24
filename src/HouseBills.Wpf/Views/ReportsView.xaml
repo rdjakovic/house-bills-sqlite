@@ -32,6 +32,8 @@
                         <Int32Animation Storyboard.TargetName="CategorySection" Storyboard.TargetProperty="(Grid.Row)" To="1" Duration="0" />
                         <Int32Animation Storyboard.TargetName="CategorySection" Storyboard.TargetProperty="(Grid.Column)" To="0" Duration="0" />
                         <ThicknessAnimation Storyboard.TargetName="MonthSection" Storyboard.TargetProperty="Margin" To="0,0,0,16" Duration="0" />
+                        <!-- The Fluent scroll bar overlays its content; keep the sections clear of it. -->
+                        <ThicknessAnimation Storyboard.TargetName="SectionsGrid" Storyboard.TargetProperty="Margin" To="0,0,16,0" Duration="0" />
                     </Storyboard>
                 </VisualState>
             </VisualStateGroup>
@@ -72,7 +74,7 @@
                       VerticalScrollBarVisibility="Disabled"
                       HorizontalScrollBarVisibility="Disabled"
                       PreviewMouseWheel="OnSectionsScrollPreviewMouseWheel">
-            <Grid>
+            <Grid x:Name="SectionsGrid">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="3*" />
                     <ColumnDefinition x:Name="CategoryColumn" Width="2*" />
