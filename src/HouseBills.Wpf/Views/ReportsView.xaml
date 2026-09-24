@@ -76,8 +76,9 @@
                       PreviewMouseWheel="OnSectionsScrollPreviewMouseWheel">
             <Grid x:Name="SectionsGrid">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="3*" />
-                    <ColumnDefinition x:Name="CategoryColumn" Width="2*" />
+                    <!-- The month table has seven columns plus a bar column; the category table has four. -->
+                    <ColumnDefinition Width="2*" />
+                    <ColumnDefinition x:Name="CategoryColumn" Width="*" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />

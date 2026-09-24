@@ -7,7 +7,8 @@ namespace HouseBills.Wpf.Views;
 public partial class ReportsView : UserControl
 {
     // View width below which the month and category sections stack instead of sitting side by side.
-    private const double NarrowLayoutMaxWidth = 900;
+    // Below this the month table's bar column gets too thin to read.
+    private const double NarrowLayoutMaxWidth = 960;
 
     public ReportsView()
     {
