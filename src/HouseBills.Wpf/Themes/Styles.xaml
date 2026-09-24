@@ -12,9 +12,11 @@
     <!-- Status{Status}Brush resources are set by ThemeService (Theming/StatusColors.cs): a light or dark set, swapped
          with the theme, so always use them as DynamicResource. -->
 
-    <!-- Bill status text (Overdue, Due soon…) in its status color. -->
+    <!-- Bill status text (Overdue, Due soon…) in its status color. The margin matches plain text columns, which
+         get it from their default cell style; a template column does not. -->
     <Style x:Key="StatusTextStyle" TargetType="TextBlock">
         <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Margin" Value="2,0,2,0" />
         <Style.Triggers>
             <DataTrigger Binding="{Binding Status}" Value="Overdue">
                 <Setter Property="Foreground" Value="{DynamicResource StatusOverdueBrush}" />
