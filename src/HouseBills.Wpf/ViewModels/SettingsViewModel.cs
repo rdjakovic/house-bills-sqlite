@@ -5,8 +5,10 @@ using CommunityToolkit.Mvvm.Input;
 
 using HouseBills.Application.Backups;
 using HouseBills.Application.Common;
+using HouseBills.Domain;
 using HouseBills.Presentation.Resources;
 using HouseBills.Wpf.Localization;
+using HouseBills.Wpf.Platform;
 using HouseBills.Wpf.Services;
 using HouseBills.Wpf.Theming;
 
@@ -24,13 +26,16 @@ public sealed partial class SettingsViewModel : PageViewModel
     private readonly IThemeService _themes;
     private readonly IDatabaseBackup _backup;
     private readonly IClock _clock;
+    private readonly IStartupRegistration _startup;
     private readonly ILogger<SettingsViewModel> _logger;
+    private bool _loadingReminderSetting;
 
     public SettingsViewModel(
         ILocalizationService localization,
         IThemeService themes,
         IDatabaseBackup backup,
         IClock clock,
+        IStartupRegistration startup,
         IDialogService dialogs,
         ILogger<SettingsViewModel> logger)
         : base(dialogs, logger)
@@ -39,6 +44,7 @@ public sealed partial class SettingsViewModel : PageViewModel
         _themes = themes;
         _backup = backup;
         _clock = clock;
+        _startup = startup;
         _logger = logger;
         Languages = localization.Languages;
         SelectedLanguage = localization.Current;
@@ -61,10 +67,17 @@ public sealed partial class SettingsViewModel : PageViewModel
 
     public string BackupFolder => _backup.BackupFolder;
 
+    public string RemindInfo => string.Format(LocalizedStrings.FormattingCulture, Strings.Settings_RemindInfo, Bill.DueSoonDays);
+
+    /// <summary>Run the reminder check at Windows sign-in; mirrors the actual Windows setting.</summary>
+    [ObservableProperty]
+    public partial bool RemindAtSignIn { get; set; }
+
     public override Task OnNavigatedToAsync()
     {
         SelectedLanguage = _localization.Current;
         SelectedTheme = _themes.Current;
+        LoadReminderSetting();
         return Task.CompletedTask;
     }
 
@@ -100,6 +113,7 @@ public sealed partial class SettingsViewModel : PageViewModel
 
         OnPropertyChanged(nameof(Title));
         OnPropertyChanged(nameof(BackupInfo));
+        OnPropertyChanged(nameof(RemindInfo));
     }
 
     [RelayCommand]
@@ -114,6 +128,46 @@ public sealed partial class SettingsViewModel : PageViewModel
             // The theme is already applied for this session; only remembering it failed.
             _logger.LogError(ex, "Saving the theme preference failed.");
             Dialogs.ShowError(Strings.Settings_SaveFailed);
+        }
+    }
+
+    partial void OnRemindAtSignInChanged(bool value)
+    {
+        if (_loadingReminderSetting)
+        {
+            return;
+        }
+
+        try
+        {
+            if (value)
+            {
+                _startup.Enable();
+            }
+            else
+            {
+                _startup.Disable();
+            }
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or System.Security.SecurityException or System.IO.IOException)
+        {
+            _logger.LogError(ex, "Changing the sign-in reminder failed.");
+            Dialogs.ShowError(Strings.Settings_ReminderSaveFailed);
+            LoadReminderSetting();
+        }
+    }
+
+    /// <summary>Shows the real state: the user can also turn the entry off in Task Manager.</summary>
+    private void LoadReminderSetting()
+    {
+        _loadingReminderSetting = true;
+        try
+        {
+            RemindAtSignIn = _startup.IsEnabled;
+        }
+        finally
+        {
+            _loadingReminderSetting = false;
         }
     }
 

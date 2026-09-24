@@ -478,4 +478,25 @@ Your current data is first saved as a safety copy in the backup folder.</value>
   <data name="Overview_LoadFailed" xml:space="preserve">
     <value>Could not load the overview.</value>
   </data>
+  <data name="Reminder_Title" xml:space="preserve">
+    <value>Bills need your attention</value>
+  </data>
+  <data name="Reminder_Overdue" xml:space="preserve">
+    <value>Overdue bills: {0} ({1})</value>
+  </data>
+  <data name="Reminder_DueSoon" xml:space="preserve">
+    <value>Due in the next {0} days: {1} ({2})</value>
+  </data>
+  <data name="Settings_Reminders" xml:space="preserve">
+    <value>Reminders</value>
+  </data>
+  <data name="Settings_RemindAtSignIn" xml:space="preserve">
+    <value>Remind me when I sign in to Windows</value>
+  </data>
+  <data name="Settings_RemindInfo" xml:space="preserve">
+    <value>At sign-in, HouseBills checks your bills briefly and shows a Windows notification if something is overdue or due in the next {0} days — at most once a day.</value>
+  </data>
+  <data name="Settings_ReminderSaveFailed" xml:space="preserve">
+    <value>The reminder setting could not be changed.</value>
+  </data>
 </root>

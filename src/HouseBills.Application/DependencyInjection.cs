@@ -3,6 +3,7 @@ using HouseBills.Application.Categories;
 using HouseBills.Application.Overview;
 using HouseBills.Application.Payees;
 using HouseBills.Application.RecurringBills;
+using HouseBills.Application.Reminders;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -21,6 +22,7 @@ public static class DependencyInjection
         services.AddSingleton<IBillService, BillService>();
         services.AddSingleton<IRecurringBillService, RecurringBillService>();
         services.AddSingleton<IOverviewService, OverviewService>();
+        services.AddSingleton<IReminderService, ReminderService>();
 
         services.AddOptions<BillingOptions>()
             .Validate(

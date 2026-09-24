@@ -53,6 +53,10 @@
                 </ComboBox.ItemContainerStyle>
             </ComboBox>
 
+            <TextBlock Text="{loc:Tr Settings_Reminders}" Style="{StaticResource FieldLabelStyle}" Margin="0,24,0,4" />
+            <CheckBox Content="{loc:Tr Settings_RemindAtSignIn}" IsChecked="{Binding RemindAtSignIn}" />
+            <TextBlock Text="{Binding RemindInfo}" Opacity="0.7" TextWrapping="Wrap" Margin="0,4,0,0" />
+
             <TextBlock Text="{loc:Tr Settings_Backup}" Style="{StaticResource FieldLabelStyle}" Margin="0,24,0,4" />
             <TextBlock Text="{Binding BackupInfo}" TextWrapping="Wrap" />
             <TextBox Text="{Binding BackupFolder, Mode=OneWay}" IsReadOnly="True" Margin="0,6,0,0"

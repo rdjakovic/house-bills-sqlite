@@ -53,6 +53,7 @@ public sealed class MainViewModelTests
             Substitute.For<HouseBills.Wpf.Theming.IThemeService>(),
             Substitute.For<HouseBills.Application.Backups.IDatabaseBackup>(),
             Substitute.For<HouseBills.Application.Common.IClock>(),
+            Substitute.For<HouseBills.Wpf.Platform.IStartupRegistration>(),
             Substitute.For<IDialogService>(),
             Microsoft.Extensions.Logging.Abstractions.NullLogger<SettingsViewModel>.Instance);
         navigation.CurrentPage.Returns(settings);

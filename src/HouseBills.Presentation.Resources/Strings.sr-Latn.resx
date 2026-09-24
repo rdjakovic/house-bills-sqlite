@@ -478,4 +478,25 @@ Trenutni podaci se prvo čuvaju kao sigurnosna kopija u fascikli rezervnih kopij
   <data name="Overview_LoadFailed" xml:space="preserve">
     <value>Pregled nije mogao da se učita.</value>
   </data>
+  <data name="Reminder_Title" xml:space="preserve">
+    <value>Računi čekaju plaćanje</value>
+  </data>
+  <data name="Reminder_Overdue" xml:space="preserve">
+    <value>Računi koji kasne: {0} ({1})</value>
+  </data>
+  <data name="Reminder_DueSoon" xml:space="preserve">
+    <value>Dospeva u narednih {0} dana: {1} ({2})</value>
+  </data>
+  <data name="Settings_Reminders" xml:space="preserve">
+    <value>Podsetnici</value>
+  </data>
+  <data name="Settings_RemindAtSignIn" xml:space="preserve">
+    <value>Podseti me kada se prijavim na Windows</value>
+  </data>
+  <data name="Settings_RemindInfo" xml:space="preserve">
+    <value>Pri prijavi HouseBills kratko proveri račune i prikaže Windows obaveštenje ako nešto kasni ili dospeva u narednih {0} dana — najviše jednom dnevno.</value>
+  </data>
+  <data name="Settings_ReminderSaveFailed" xml:space="preserve">
+    <value>Podešavanje podsetnika nije moglo da se promeni.</value>
+  </data>
 </root>

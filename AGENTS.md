@@ -16,7 +16,7 @@ Windows desktop line-of-business application backed by a local **SQLite** databa
 | Area | Choice |
 |---|---|
 | Language | **C#** (latest version supported by the target SDK). No VB.NET. |
-| Runtime | **.NET 10 (LTS)** — `net10.0` / `net10.0-windows` |
+| Runtime | **.NET 10 (LTS)** — `net10.0`; the WPF project targets `net10.0-windows10.0.19041.0` (Windows notification API) with `SupportedOSPlatformVersion` 10.0.17763 |
 | UI | **WPF** with **MVVM** |
 | MVVM toolkit | `CommunityToolkit.Mvvm` |
 | Charts | `LiveChartsCore.SkiaSharpView.WPF` (LiveCharts2) — its WPF host pulls .NET Framework-only SkiaSharp/OpenTK packages, so `NU1701` is suppressed in the WPF project only |

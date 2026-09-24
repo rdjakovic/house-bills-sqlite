@@ -7,6 +7,7 @@ using HouseBills.Infrastructure.Backups;
 using HouseBills.Infrastructure.Preferences;
 using HouseBills.Wpf.Charts;
 using HouseBills.Wpf.Localization;
+using HouseBills.Wpf.Platform;
 using HouseBills.Wpf.Services;
 using HouseBills.Wpf.Theming;
 using HouseBills.Wpf.ViewModels;
@@ -50,6 +51,9 @@ internal static class HostBuilderExtensions
         services.AddSingleton<ILocalizationService, LocalizationService>();
         services.AddSingleton<IThemeService, ThemeService>();
         services.AddSingleton<IChartColors, FluentChartColors>();
+        services.AddSingleton<IStartupRegistration, WindowsStartupRegistration>();
+        services.AddSingleton<IReminderNotifier, WindowsReminderNotifier>();
+        services.AddSingleton<ReminderCheck>();
 
         services.AddSingleton<MainViewModel>();
         services.AddSingleton<OverviewViewModel>();

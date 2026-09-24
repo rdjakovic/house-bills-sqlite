@@ -8,6 +8,7 @@ using HouseBills.Application.Common;
 using HouseBills.Presentation.Resources;
 using HouseBills.Wpf.Hosting;
 using HouseBills.Wpf.Localization;
+using HouseBills.Wpf.Platform;
 using HouseBills.Wpf.Theming;
 using HouseBills.Wpf.Views;
 
@@ -31,7 +32,7 @@ public partial class App : System.Windows.Application
 
         try
         {
-            _host = HostBuilderExtensions.CreateHost(e.Args);
+            _host = HostBuilderExtensions.CreateHost(CommandLine.ConfigurationArguments(e.Args));
             await _host.StartAsync();
         }
         catch (Exception ex) when (ex is InvalidOperationException or Microsoft.Extensions.Options.OptionsValidationException)
@@ -49,6 +50,13 @@ public partial class App : System.Windows.Application
         // Before any window is shown, so every window (including the startup window) uses the chosen language.
         var localization = _host.Services.GetRequiredService<ILocalizationService>();
         await localization.InitializeAsync(CancellationToken.None);
+        if (CommandLine.IsReminderCheck(e.Args))
+        {
+            await RunReminderCheckAsync(_host.Services);
+            Shutdown();
+            return;
+        }
+
         DatePickerWatermark.Register();
         await _host.Services.GetRequiredService<IThemeService>().InitializeAsync(CancellationToken.None);
 
@@ -69,6 +77,7 @@ public partial class App : System.Windows.Application
         startupWindow?.Close();
 
         _ = CreateAutomaticBackupAsync(_host.Services);
+        KeepSignInReminderCurrent(_host.Services);
     }
 
     protected override void OnExit(ExitEventArgs e)
@@ -130,6 +139,39 @@ public partial class App : System.Windows.Application
         catch (Exception ex)
         {
             Logger?.LogError(ex, "Automatic backup failed.");
+        }
+    }
+
+    /// <summary>
+    /// The sign-in reminder: runs without any window and never shows an error dialog (the user didn't start the app);
+    /// problems are only logged.
+    /// </summary>
+    private async Task RunReminderCheckAsync(IServiceProvider services)
+    {
+        try
+        {
+            await Task.Run(async () =>
+            {
+                await services.GetRequiredService<IDatabaseInitializer>().InitializeAsync(CancellationToken.None);
+                await services.GetRequiredService<ReminderCheck>().RunAsync(CancellationToken.None);
+            });
+        }
+        catch (Exception ex)
+        {
+            Logger?.LogError(ex, "Reminder check failed.");
+        }
+    }
+
+    /// <summary>After a reinstall to another folder, the sign-in entry would point at the old program file.</summary>
+    private void KeepSignInReminderCurrent(IServiceProvider services)
+    {
+        try
+        {
+            services.GetRequiredService<IStartupRegistration>().RefreshIfEnabled();
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or System.Security.SecurityException or System.IO.IOException)
+        {
+            Logger?.LogWarning(ex, "Could not update the sign-in reminder entry.");
         }
     }
 

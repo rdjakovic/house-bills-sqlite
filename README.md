@@ -16,6 +16,7 @@ Built with .NET 10, WPF (Fluent theme) and SQLite. Everything stays on your own 
 - **Payees and categories** — names are unique; anything still in use can't be deleted. Seven starter categories are created with the database.
 - **Reports** — a column chart of each month against the previous year and a doughnut chart of spending per category, with the exact numbers in tables below. Charts follow the light/dark theme and the chosen language.
 - **English or Srpski** — choose the language under **Settings** (bottom of the menu); it switches immediately and is remembered. Serbian also uses Serbian formats (`1.234,56 RSD`, `24.9.2026.`); English follows your Windows regional settings.
+- **Reminders** — optional (**Settings → Remind me when I sign in to Windows**): at sign-in HouseBills checks briefly, without opening a window, and shows a Windows notification if bills are overdue or due in the next 7 days — at most once a day. Clicking the notification opens HouseBills. The entry also appears in Task Manager's startup apps, where it can be turned off.
 - **Backups** — a backup every day (the last 14 are kept), **Back up now…** to any folder or USB stick, and **Restore from backup…** in **Settings**. Restoring first saves your current data as a safety copy.
 - **Keyboard and mouse shortcuts** — double-click or **Enter** on a row to edit it, **Delete** to delete it, **Ctrl+N** for a new item, **Esc** to close the editor, **F5** to refresh the bills list. Click a column header to sort.
 - **Light or dark** — under **Settings**, choose *Same as Windows* (default), *Light* or *Dark*; it switches immediately and is remembered.
@@ -37,7 +38,7 @@ Nothing else is installed: no .NET, no database server.
 - **Backups:** HouseBills makes one automatically each day at startup in `%LOCALAPPDATA%\HouseBills\Backups` and keeps the last 14. For a copy somewhere safer (USB stick, OneDrive), use **Settings → Back up now…**; this works while the app is running.
 - **Restore / moving to another PC:** on the other PC, install HouseBills and use **Settings → Restore from backup…** with your backup file. Your current data is first saved in the backup folder as `HouseBills-before-restore-….db`. Backups from an older HouseBills are upgraded automatically; a backup from a newer version is refused (update HouseBills first).
 - Before HouseBills upgrades your data to a newer format (after an update), it saves a copy as `HouseBills-before-upgrade-….db` in the backup folder.
-- Uninstalling HouseBills keeps your data, so reinstalling brings your bills back.
+- Uninstalling HouseBills keeps your data, so reinstalling brings your bills back. It removes the sign-in reminder and the notification registration.
 - Log files are in `%LOCALAPPDATA%\HouseBills\Logs` (one file per day, kept for 30 days) — useful when something goes wrong.
 - Your language and theme choices are stored in `%LOCALAPPDATA%\HouseBills\preferences.json`. Without it, HouseBills starts in Serbian if Windows' display language is Serbian, otherwise in English.
 
@@ -111,7 +112,7 @@ dotnet ef migrations script --idempotent -p src/HouseBills.Infrastructure -s src
 powershell -ExecutionPolicy Bypass -File installer\build-installer.ps1 -Version 1.0.0
 ```
 
-This publishes the app self-contained for win-x64 and compiles `installer\HouseBills.iss`. Output: `artifacts\installer\HouseBills-Setup-1.0.0.exe` (~52 MB). SQLite's and SkiaSharp's native libraries (`e_sqlite3.dll`, `libSkiaSharp.dll`, `libHarfBuzzSharp.dll`) are part of the published app and only use DLLs that come with Windows.
+This publishes the app self-contained for win-x64 and compiles `installer\HouseBills.iss`. Output: `artifacts\installer\HouseBills-Setup-1.0.0.exe` (~56 MB). SQLite's and SkiaSharp's native libraries (`e_sqlite3.dll`, `libSkiaSharp.dll`, `libHarfBuzzSharp.dll`) are part of the published app and only use DLLs that come with Windows.
 
 Test installer changes on a **clean** Windows (e.g. Windows Sandbox), not only on your dev PC — the dev PC already has runtimes the target PC may not.
 

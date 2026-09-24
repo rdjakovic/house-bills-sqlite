@@ -1,6 +1,7 @@
 using HouseBills.Application.Backups;
 using HouseBills.Application.Common;
 using HouseBills.Wpf.Localization;
+using HouseBills.Wpf.Platform;
 using HouseBills.Wpf.Services;
 using HouseBills.Wpf.Theming;
 using HouseBills.Wpf.ViewModels;
@@ -22,6 +23,7 @@ public sealed class SettingsViewModelTests
     private readonly IDialogService _dialogs = Substitute.For<IDialogService>();
     private readonly IDatabaseBackup _backup = Substitute.For<IDatabaseBackup>();
     private readonly IClock _clock = Substitute.For<IClock>();
+    private readonly IStartupRegistration _startup = Substitute.For<IStartupRegistration>();
 
     public SettingsViewModelTests()
     {
@@ -179,5 +181,46 @@ public sealed class SettingsViewModelTests
         _dialogs.DidNotReceiveWithAnyArgs().ShowInfo(default!);
     }
 
-    private SettingsViewModel CreateViewModel() => new(_localization, _themes, _backup, _clock, _dialogs, NullLogger<SettingsViewModel>.Instance);
+    [Fact]
+    public async Task OnNavigatedToAsync_ReminderEnabledInWindows_ShowsItCheckedWithoutWritingIt()
+    {
+        _startup.IsEnabled.Returns(true);
+        var viewModel = CreateViewModel();
+
+        await viewModel.OnNavigatedToAsync();
+
+        viewModel.RemindAtSignIn.ShouldBeTrue();
+        _startup.DidNotReceive().Enable();
+        viewModel.RemindInfo.ShouldContain("7");
+    }
+
+    [Fact]
+    public void RemindAtSignIn_Toggled_EnablesThenDisables()
+    {
+        var viewModel = CreateViewModel();
+
+        viewModel.RemindAtSignIn = true;
+        viewModel.RemindAtSignIn = false;
+
+        Received.InOrder(() =>
+        {
+            _startup.Enable();
+            _startup.Disable();
+        });
+    }
+
+    [Fact]
+    public void RemindAtSignIn_WriteFails_ShowsErrorAndShowsRealState()
+    {
+        _startup.When(s => s.Enable()).Do(_ => throw new UnauthorizedAccessException("denied"));
+        _startup.IsEnabled.Returns(false);
+        var viewModel = CreateViewModel();
+
+        viewModel.RemindAtSignIn = true;
+
+        _dialogs.Received(1).ShowError(Arg.Is<string>(m => !m.Contains("denied")));
+        viewModel.RemindAtSignIn.ShouldBeFalse();
+    }
+
+    private SettingsViewModel CreateViewModel() => new(_localization, _themes, _backup, _clock, _startup, _dialogs, NullLogger<SettingsViewModel>.Instance);
 }

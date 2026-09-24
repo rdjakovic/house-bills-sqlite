@@ -47,5 +47,12 @@ Source: "{#PublishDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs
 Name: "{autoprograms}\HouseBills"; Filename: "{app}\{#AppExe}"
 Name: "{autodesktop}\HouseBills"; Filename: "{app}\{#AppExe}"; Tasks: desktopicon
 
+[Registry]
+; Created by the app for the current user (sign-in reminder, notification identity, the housebills: link that
+; notifications open); removed on uninstall.
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: none; ValueName: "HouseBills"; Flags: dontcreatekey uninsdeletevalue
+Root: HKCU; Subkey: "Software\Classes\AppUserModelId\HouseBills"; Flags: dontcreatekey uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\housebills"; Flags: dontcreatekey uninsdeletekey
+
 [Run]
 Filename: "{app}\{#AppExe}"; Description: "{cm:LaunchProgram,HouseBills}"; Flags: nowait postinstall skipifsilent
