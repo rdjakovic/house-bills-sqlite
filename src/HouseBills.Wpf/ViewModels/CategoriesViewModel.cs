@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 
 using HouseBills.Application.Categories;
 using HouseBills.Presentation.Resources;
+using HouseBills.Wpf.Export;
 using HouseBills.Wpf.Localization;
 using HouseBills.Wpf.Services;
 using HouseBills.Wpf.ViewModels.Categories;
@@ -13,7 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace HouseBills.Wpf.ViewModels;
 
-public sealed partial class CategoriesViewModel(ICategoryService categories, IDialogService dialogs, ILogger<CategoriesViewModel> logger)
+public sealed partial class CategoriesViewModel(ICategoryService categories, IFileSaver files, IDialogService dialogs, ILogger<CategoriesViewModel> logger)
     : PageViewModel(dialogs, logger)
 {
     public override string Title => Strings.Page_Categories;
@@ -75,6 +76,11 @@ public sealed partial class CategoriesViewModel(ICategoryService categories, IDi
         Editor = null;
         await ExecuteAndReloadAsync(() => categories.DeleteAsync(item.Id, item.RowVersion, cancellationToken), () => LoadAsync(cancellationToken), Strings.Categories_DeleteFailed);
     }
+
+    /// <summary>Exports the list to a CSV file.</summary>
+    [RelayCommand]
+    private Task ExportAsync(CancellationToken cancellationToken) =>
+        ExportCsvAsync(files, $"HouseBills-{Title}.csv", () => CsvExports.Categories(Items), cancellationToken);
 
     private bool HasSelection() => SelectedItem is not null;
 

@@ -1,7 +1,9 @@
 using System.Globalization;
 
 using HouseBills.Application.Bills;
+using HouseBills.Application.Categories;
 using HouseBills.Application.Export;
+using HouseBills.Application.Payees;
 using HouseBills.Application.Reports;
 using HouseBills.Presentation.Resources;
 using HouseBills.Wpf.Converters;
@@ -77,6 +79,29 @@ public static class CsvExports
         foreach (var category in categories)
         {
             csv.AddRow(category.CategoryName, category.BillCount.ToString(culture), Amount(category.TotalAmount, culture), Amount(category.PaidAmount, culture));
+        }
+
+        return csv.ToString();
+    }
+
+    public static string Categories(IEnumerable<CategoryDto> categories)
+    {
+        var csv = new CsvDocument(LocalizedStrings.RegionalCulture.TextInfo.ListSeparator).AddRow(Strings.Field_Name);
+        foreach (var category in categories)
+        {
+            csv.AddRow(category.Name);
+        }
+
+        return csv.ToString();
+    }
+
+    public static string Payees(IEnumerable<PayeeDto> payees)
+    {
+        var csv = new CsvDocument(LocalizedStrings.RegionalCulture.TextInfo.ListSeparator)
+            .AddRow(Strings.Field_Name, Strings.Field_AccountReference, Strings.Field_Notes);
+        foreach (var payee in payees)
+        {
+            csv.AddRow(payee.Name, payee.AccountReference, payee.Notes);
         }
 
         return csv.ToString();

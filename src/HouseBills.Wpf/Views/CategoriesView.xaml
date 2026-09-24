@@ -22,6 +22,7 @@
             <Button Content="{loc:Tr Categories_New}" Command="{Binding NewCommand}" ToolTip="Ctrl+N" Style="{StaticResource AccentToolbarButtonStyle}" />
             <Button Content="{loc:Tr Common_Edit}" Command="{Binding EditCommand}" ToolTip="Enter" Style="{StaticResource ToolbarButtonStyle}" />
             <Button Content="{loc:Tr Common_Delete}" Command="{Binding DeleteCommand}" ToolTip="Delete" Style="{StaticResource ToolbarButtonStyle}" />
+            <Button Content="{loc:Tr Common_Export}" Command="{Binding ExportCommand}" Style="{StaticResource ToolbarButtonStyle}" />
         </StackPanel>
 
         <Grid>

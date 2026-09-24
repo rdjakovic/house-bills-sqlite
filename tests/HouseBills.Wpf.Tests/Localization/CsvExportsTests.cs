@@ -1,6 +1,8 @@
 using System.Globalization;
 
 using HouseBills.Application.Bills;
+using HouseBills.Application.Categories;
+using HouseBills.Application.Payees;
 using HouseBills.Application.Reports;
 using HouseBills.Domain;
 using HouseBills.Wpf.Export;
@@ -52,6 +54,26 @@ public sealed class CsvExportsTests : IDisposable
         lines[2].ShouldBeEmpty();
         lines[3].ShouldBe("Category,Bills,Total,Paid");
         lines[4].ShouldBe("Utilities,2,150.00,100.00");
+    }
+
+    [Fact]
+    public void Categories_Always_WritesNameColumn()
+    {
+        LocalizedStrings.RegionalCulture = CultureInfo.GetCultureInfo("en-US");
+
+        var lines = Lines(CsvExports.Categories([new CategoryDto(1, "Internet & Phone", [1]), new CategoryDto(2, "Rent, Mortgage", [1])]));
+
+        lines.ShouldBe(["Name", "Internet & Phone", "\"Rent, Mortgage\""]);
+    }
+
+    [Fact]
+    public void Payees_SerbianRegionalSettings_WritesShownColumnsWithSemicolons()
+    {
+        LocalizedStrings.RegionalCulture = CultureInfo.GetCultureInfo("sr-Latn-RS");
+
+        var lines = Lines(CsvExports.Payees([new PayeeDto(1, "EPS", "123-456; ref", null, [1])]));
+
+        lines.ShouldBe(["Name;Account reference;Notes", "EPS;\"123-456; ref\";"]);
     }
 
     private static string[] Lines(string csv) => csv.Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
