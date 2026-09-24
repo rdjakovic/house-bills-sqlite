@@ -2,7 +2,9 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 
 using HouseBills.Application.Common;
+using HouseBills.Application.Import;
 using HouseBills.Presentation.Resources;
+using HouseBills.Wpf.Import;
 using HouseBills.Wpf.Localization;
 using HouseBills.Wpf.Services;
 
@@ -106,6 +108,88 @@ public abstract partial class PageViewModel(IDialogService dialogs, ILogger logg
             logger.LogError(ex, "Export failed.");
             Dialogs.ShowError(Strings.Export_Failed);
         }
+    }
+
+    /// <summary>
+    /// Asks for a CSV file, reads it with <paramref name="parse"/>, imports the rows and reloads the page. Problems in
+    /// the file (or rows the import rejects) are listed and nothing is imported.
+    /// </summary>
+    protected async Task ImportCsvAsync<T>(
+        IFileReader files,
+        Func<string, CsvImport<T>> parse,
+        Func<IReadOnlyList<T>, Task<Result<ImportSummary>>> import,
+        Func<Task> reload,
+        CancellationToken cancellationToken)
+    {
+        if (Dialogs.PickCsvToOpen() is not { } path)
+        {
+            return;
+        }
+
+        string text;
+        try
+        {
+            text = await files.ReadTextAsync(path, cancellationToken);
+        }
+        catch (Exception ex) when (ex is System.IO.IOException or UnauthorizedAccessException)
+        {
+            logger.LogError(ex, "Import could not read the file.");
+            Dialogs.ShowError(Strings.Import_ReadFailed);
+            return;
+        }
+
+        var parsed = parse(text);
+        if (parsed.Errors.Count > 0)
+        {
+            ShowImportErrors(parsed.Errors);
+            return;
+        }
+
+        Result<ImportSummary>? result = null;
+        var completed = await RunAsync(
+            async () =>
+            {
+                result = await import(parsed.Rows);
+                if (result.IsSuccess)
+                {
+                    await reload();
+                }
+            },
+            Strings.Import_Failed);
+        if (!completed || result is null)
+        {
+            return;
+        }
+
+        if (!result.IsSuccess)
+        {
+            ShowImportErrors(result.Error!.Message.Split(Environment.NewLine));
+            return;
+        }
+
+        var summary = result.Value;
+        var culture = LocalizedStrings.FormattingCulture;
+        var message = string.Format(culture, Strings.Import_Done, summary.Added, summary.Skipped);
+        if (summary.PayeesCreated > 0 || summary.CategoriesCreated > 0)
+        {
+            message += Environment.NewLine + string.Format(culture, Strings.Import_Created, summary.PayeesCreated, summary.CategoriesCreated);
+        }
+
+        Dialogs.ShowInfo(message);
+    }
+
+    /// <summary>Lists the first problems (a long list would not fit on screen).</summary>
+    private void ShowImportErrors(IReadOnlyList<string> errors)
+    {
+        const int Shown = 15;
+        var lines = new List<string> { Strings.Import_NothingImported, string.Empty };
+        lines.AddRange(errors.Take(Shown));
+        if (errors.Count > Shown)
+        {
+            lines.Add(string.Format(LocalizedStrings.FormattingCulture, Strings.Import_MoreErrors, errors.Count - Shown));
+        }
+
+        Dialogs.ShowError(string.Join(Environment.NewLine, lines));
     }
 
     /// <summary>Runs a list action (delete, mark paid...), shows any business error, then reloads.</summary>

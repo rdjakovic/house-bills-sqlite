@@ -529,4 +529,46 @@ Your current data is first saved as a safety copy in the backup folder.</value>
   <data name="Export_Failed" xml:space="preserve">
     <value>The file could not be saved. If it is open in Excel, close it and try again.</value>
   </data>
+  <data name="Common_Import" xml:space="preserve">
+    <value>Import…</value>
+  </data>
+  <data name="Import_Empty" xml:space="preserve">
+    <value>The file is empty.</value>
+  </data>
+  <data name="Import_MissingColumn" xml:space="preserve">
+    <value>The file has no “{0}” column. Export from HouseBills to get a file with the right columns.</value>
+  </data>
+  <data name="Import_RowError" xml:space="preserve">
+    <value>Row {0}: {1}</value>
+  </data>
+  <data name="Import_Required" xml:space="preserve">
+    <value>“{0}” is empty.</value>
+  </data>
+  <data name="Import_InvalidAmount" xml:space="preserve">
+    <value>“{1}” in “{0}” is not an amount.</value>
+  </data>
+  <data name="Import_InvalidDate" xml:space="preserve">
+    <value>“{1}” in “{0}” is not a date.</value>
+  </data>
+  <data name="Import_InvalidYes" xml:space="preserve">
+    <value>“{1}” in “{0}”: write “{2}” or leave it empty.</value>
+  </data>
+  <data name="Import_NothingImported" xml:space="preserve">
+    <value>Nothing was imported. Fix these problems and try again:</value>
+  </data>
+  <data name="Import_MoreErrors" xml:space="preserve">
+    <value>…and {0} more.</value>
+  </data>
+  <data name="Import_Done" xml:space="preserve">
+    <value>Added: {0}. Skipped (already in the list): {1}.</value>
+  </data>
+  <data name="Import_Created" xml:space="preserve">
+    <value>New payees: {0}. New categories: {1}.</value>
+  </data>
+  <data name="Import_ReadFailed" xml:space="preserve">
+    <value>The file could not be read. If it is open in Excel, close it and try again.</value>
+  </data>
+  <data name="Import_Failed" xml:space="preserve">
+    <value>Could not import the file.</value>
+  </data>
 </root>

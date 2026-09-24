@@ -26,6 +26,7 @@
             <Button Content="{loc:Tr Bills_MarkUnpaid}" Command="{Binding MarkUnpaidCommand}" Style="{StaticResource ToolbarButtonStyle}" />
             <Button Content="{loc:Tr Common_Delete}" Command="{Binding DeleteCommand}" ToolTip="Delete" Style="{StaticResource ToolbarButtonStyle}" />
             <Button Content="{loc:Tr Bills_GenerateFromRecurring}" Command="{Binding GenerateCommand}" Style="{StaticResource ToolbarButtonStyle}" />
+            <Button Content="{loc:Tr Common_Import}" Command="{Binding ImportCommand}" Style="{StaticResource ToolbarButtonStyle}" />
             <Button Content="{loc:Tr Common_Export}" Command="{Binding ExportCommand}" Style="{StaticResource ToolbarButtonStyle}" />
         </StackPanel>
 

@@ -49,6 +49,16 @@ internal sealed class DialogService : IDialogService
         return dialog.ShowDialog(Owner) == true ? dialog.FileName : null;
     }
 
+    public string? PickCsvToOpen()
+    {
+        var dialog = new OpenFileDialog
+        {
+            Filter = $"{Strings.Export_FileType} (*.csv)|*.csv|{Strings.Backup_AllFiles} (*.*)|*.*",
+            InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+        };
+        return dialog.ShowDialog(Owner) == true ? dialog.FileName : null;
+    }
+
     public string? PickBackupToOpen(string initialFolder)
     {
         var dialog = new OpenFileDialog

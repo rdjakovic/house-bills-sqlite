@@ -4,8 +4,10 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 using HouseBills.Application.Categories;
+using HouseBills.Application.Import;
 using HouseBills.Presentation.Resources;
 using HouseBills.Wpf.Export;
+using HouseBills.Wpf.Import;
 using HouseBills.Wpf.Localization;
 using HouseBills.Wpf.Services;
 using HouseBills.Wpf.ViewModels.Categories;
@@ -14,7 +16,13 @@ using Microsoft.Extensions.Logging;
 
 namespace HouseBills.Wpf.ViewModels;
 
-public sealed partial class CategoriesViewModel(ICategoryService categories, IFileSaver files, IDialogService dialogs, ILogger<CategoriesViewModel> logger)
+public sealed partial class CategoriesViewModel(
+    ICategoryService categories,
+    IImportService imports,
+    IFileSaver files,
+    IFileReader fileReader,
+    IDialogService dialogs,
+    ILogger<CategoriesViewModel> logger)
     : PageViewModel(dialogs, logger)
 {
     public override string Title => Strings.Page_Categories;
@@ -81,6 +89,11 @@ public sealed partial class CategoriesViewModel(ICategoryService categories, IFi
     [RelayCommand]
     private Task ExportAsync(CancellationToken cancellationToken) =>
         ExportCsvAsync(files, $"HouseBills-{Title}.csv", () => CsvExports.Categories(Items), cancellationToken);
+
+    /// <summary>Adds the rows of a CSV file (e.g. an edited export); names already in the list are skipped.</summary>
+    [RelayCommand]
+    private Task ImportAsync(CancellationToken cancellationToken) =>
+        ImportCsvAsync(fileReader, CsvImports.Categories, rows => imports.ImportCategoriesAsync(rows, cancellationToken), () => LoadAsync(cancellationToken), cancellationToken);
 
     private bool HasSelection() => SelectedItem is not null;
 

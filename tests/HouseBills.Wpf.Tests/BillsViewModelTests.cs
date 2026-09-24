@@ -1,6 +1,7 @@
 using HouseBills.Application.Bills;
 using HouseBills.Application.Categories;
 using HouseBills.Application.Common;
+using HouseBills.Application.Import;
 using HouseBills.Application.Payees;
 using HouseBills.Application.RecurringBills;
 using HouseBills.Domain;
@@ -37,7 +38,7 @@ public sealed class BillsViewModelTests
             Item(1, 100m, paidOn: null),
             Item(2, 40m, paidOn: Today),
         ]);
-        _viewModel = new BillsViewModel(_bills, _recurring, _payees, _categories, clock, _files, _dialogs, NullLogger<BillsViewModel>.Instance);
+        _viewModel = new BillsViewModel(_bills, _recurring, _payees, _categories, clock, Substitute.For<IImportService>(), _files, Substitute.For<IFileReader>(), _dialogs, NullLogger<BillsViewModel>.Instance);
     }
 
     [Fact]

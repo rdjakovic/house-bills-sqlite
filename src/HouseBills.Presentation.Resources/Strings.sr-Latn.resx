@@ -529,4 +529,46 @@ Trenutni podaci se prvo čuvaju kao sigurnosna kopija u fascikli rezervnih kopij
   <data name="Export_Failed" xml:space="preserve">
     <value>Datoteka nije mogla da se sačuva. Ako je otvorena u Excelu, zatvorite je i pokušajte ponovo.</value>
   </data>
+  <data name="Common_Import" xml:space="preserve">
+    <value>Uvezi…</value>
+  </data>
+  <data name="Import_Empty" xml:space="preserve">
+    <value>Datoteka je prazna.</value>
+  </data>
+  <data name="Import_MissingColumn" xml:space="preserve">
+    <value>Datoteka nema kolonu „{0}“. Izvezite podatke iz aplikacije HouseBills da biste dobili datoteku sa odgovarajućim kolonama.</value>
+  </data>
+  <data name="Import_RowError" xml:space="preserve">
+    <value>Red {0}: {1}</value>
+  </data>
+  <data name="Import_Required" xml:space="preserve">
+    <value>„{0}“ je prazno.</value>
+  </data>
+  <data name="Import_InvalidAmount" xml:space="preserve">
+    <value>„{1}“ u koloni „{0}“ nije iznos.</value>
+  </data>
+  <data name="Import_InvalidDate" xml:space="preserve">
+    <value>„{1}“ u koloni „{0}“ nije datum.</value>
+  </data>
+  <data name="Import_InvalidYes" xml:space="preserve">
+    <value>„{1}“ u koloni „{0}“: upišite „{2}“ ili ostavite prazno.</value>
+  </data>
+  <data name="Import_NothingImported" xml:space="preserve">
+    <value>Ništa nije uvezeno. Ispravite sledeće i pokušajte ponovo:</value>
+  </data>
+  <data name="Import_MoreErrors" xml:space="preserve">
+    <value>…i još {0}.</value>
+  </data>
+  <data name="Import_Done" xml:space="preserve">
+    <value>Dodato: {0}. Preskočeno (već postoji): {1}.</value>
+  </data>
+  <data name="Import_Created" xml:space="preserve">
+    <value>Novih primalaca: {0}. Novih kategorija: {1}.</value>
+  </data>
+  <data name="Import_ReadFailed" xml:space="preserve">
+    <value>Datoteka nije mogla da se pročita. Ako je otvorena u Excelu, zatvorite je i pokušajte ponovo.</value>
+  </data>
+  <data name="Import_Failed" xml:space="preserve">
+    <value>Uvoz datoteke nije uspeo.</value>
+  </data>
 </root>

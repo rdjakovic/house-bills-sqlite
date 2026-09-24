@@ -6,10 +6,12 @@ using CommunityToolkit.Mvvm.Input;
 using HouseBills.Application.Bills;
 using HouseBills.Application.Categories;
 using HouseBills.Application.Common;
+using HouseBills.Application.Import;
 using HouseBills.Application.Payees;
 using HouseBills.Application.RecurringBills;
 using HouseBills.Presentation.Resources;
 using HouseBills.Wpf.Export;
+using HouseBills.Wpf.Import;
 using HouseBills.Wpf.Localization;
 using HouseBills.Wpf.Services;
 using HouseBills.Wpf.ViewModels.Bills;
@@ -25,7 +27,9 @@ public sealed partial class BillsViewModel : PageViewModel
     private readonly IPayeeService _payees;
     private readonly ICategoryService _categories;
     private readonly IClock _clock;
+    private readonly IImportService _imports;
     private readonly IFileSaver _files;
+    private readonly IFileReader _fileReader;
     private bool _hasGeneratedBills;
 
     public BillsViewModel(
@@ -34,7 +38,9 @@ public sealed partial class BillsViewModel : PageViewModel
         IPayeeService payees,
         ICategoryService categories,
         IClock clock,
+        IImportService imports,
         IFileSaver files,
+        IFileReader fileReader,
         IDialogService dialogs,
         ILogger<BillsViewModel> logger)
         : base(dialogs, logger)
@@ -44,7 +50,9 @@ public sealed partial class BillsViewModel : PageViewModel
         _payees = payees;
         _categories = categories;
         _clock = clock;
+        _imports = imports;
         _files = files;
+        _fileReader = fileReader;
         StatusFilter = BillStatusFilter.Unpaid;
     }
 
@@ -135,6 +143,23 @@ public sealed partial class BillsViewModel : PageViewModel
         var name = $"HouseBills-{_clock.Today.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)}.csv";
         return ExportCsvAsync(_files, name, () => CsvExports.Bills(Bills), cancellationToken);
     }
+
+    /// <summary>
+    /// Adds the bills of a CSV file (e.g. an edited export), creating payees and categories it names; bills already in
+    /// the list are skipped.
+    /// </summary>
+    [RelayCommand]
+    private Task ImportAsync(CancellationToken cancellationToken) =>
+        ImportCsvAsync(
+            _fileReader,
+            CsvImports.Bills,
+            rows => _imports.ImportBillsAsync(rows, cancellationToken),
+            async () =>
+            {
+                await LoadLookupsAsync(cancellationToken);
+                await LoadBillsAsync(cancellationToken);
+            },
+            cancellationToken);
 
     [RelayCommand]
     private Task ClearFiltersAsync(CancellationToken cancellationToken)

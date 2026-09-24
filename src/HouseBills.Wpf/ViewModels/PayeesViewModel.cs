@@ -3,9 +3,11 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
+using HouseBills.Application.Import;
 using HouseBills.Application.Payees;
 using HouseBills.Presentation.Resources;
 using HouseBills.Wpf.Export;
+using HouseBills.Wpf.Import;
 using HouseBills.Wpf.Localization;
 using HouseBills.Wpf.Services;
 using HouseBills.Wpf.ViewModels.Payees;
@@ -14,7 +16,13 @@ using Microsoft.Extensions.Logging;
 
 namespace HouseBills.Wpf.ViewModels;
 
-public sealed partial class PayeesViewModel(IPayeeService payees, IFileSaver files, IDialogService dialogs, ILogger<PayeesViewModel> logger)
+public sealed partial class PayeesViewModel(
+    IPayeeService payees,
+    IImportService imports,
+    IFileSaver files,
+    IFileReader fileReader,
+    IDialogService dialogs,
+    ILogger<PayeesViewModel> logger)
     : PageViewModel(dialogs, logger)
 {
     public override string Title => Strings.Page_Payees;
@@ -81,6 +89,11 @@ public sealed partial class PayeesViewModel(IPayeeService payees, IFileSaver fil
     [RelayCommand]
     private Task ExportAsync(CancellationToken cancellationToken) =>
         ExportCsvAsync(files, $"HouseBills-{Title}.csv", () => CsvExports.Payees(Items), cancellationToken);
+
+    /// <summary>Adds the rows of a CSV file (e.g. an edited export); names already in the list are skipped.</summary>
+    [RelayCommand]
+    private Task ImportAsync(CancellationToken cancellationToken) =>
+        ImportCsvAsync(fileReader, CsvImports.Payees, rows => imports.ImportPayeesAsync(rows, cancellationToken), () => LoadAsync(cancellationToken), cancellationToken);
 
     private bool HasSelection() => SelectedItem is not null;
 

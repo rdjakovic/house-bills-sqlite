@@ -86,4 +86,16 @@
   <data name="Backup_FromNewerVersion" xml:space="preserve">
     <value>Ova rezervna kopija je napravljena novijom verzijom programa HouseBills. Prvo ažurirajte HouseBills, pa je onda vratite. Ništa nije promenjeno.</value>
   </data>
+  <data name="Field_Payee" xml:space="preserve">
+    <value>Primalac</value>
+  </data>
+  <data name="Field_Category" xml:space="preserve">
+    <value>Kategorija</value>
+  </data>
+  <data name="Import_RowError" xml:space="preserve">
+    <value>Red {0}: {1}</value>
+  </data>
+  <data name="Import_PaidAmountWithoutDate" xml:space="preserve">
+    <value>Plaćeni iznos je popunjen, ali datum plaćanja nije.</value>
+  </data>
 </root>

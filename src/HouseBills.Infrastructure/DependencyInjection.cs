@@ -34,6 +34,7 @@ public static class DependencyInjection
         services.AddSingleton<IPayeeRepository, PayeeRepository>();
         services.AddSingleton<IRecurringBillRepository, RecurringBillRepository>();
         services.AddSingleton<IBillRepository, BillRepository>();
+        services.AddSingleton<IImportRepository, ImportRepository>();
         services.AddSingleton<IReportQueries, ReportQueries>();
         services.AddSingleton<IDatabaseInitializer, SqliteDatabaseInitializer>();
         services.AddSingleton<IDatabaseBackup, SqliteDatabaseBackup>();

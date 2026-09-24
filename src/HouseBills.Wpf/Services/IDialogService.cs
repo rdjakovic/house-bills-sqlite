@@ -16,6 +16,9 @@ public interface IDialogService
     /// <summary>Asks where to save an exported CSV file; returns the chosen path, or <c>null</c> if cancelled.</summary>
     string? PickCsvSaveLocation(string suggestedFileName);
 
+    /// <summary>Asks for a CSV file to import; returns the path, or <c>null</c> if cancelled.</summary>
+    string? PickCsvToOpen();
+
     /// <summary>Asks for a backup file to open, starting in <paramref name="initialFolder"/>; returns the path, or <c>null</c> if cancelled.</summary>
     string? PickBackupToOpen(string initialFolder);
 }

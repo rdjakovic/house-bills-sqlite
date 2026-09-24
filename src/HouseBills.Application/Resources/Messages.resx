@@ -86,4 +86,16 @@
   <data name="Backup_FromNewerVersion" xml:space="preserve">
     <value>This backup was made by a newer version of HouseBills. Update HouseBills first, then restore it. Nothing was changed.</value>
   </data>
+  <data name="Field_Payee" xml:space="preserve">
+    <value>Payee</value>
+  </data>
+  <data name="Field_Category" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="Import_RowError" xml:space="preserve">
+    <value>Row {0}: {1}</value>
+  </data>
+  <data name="Import_PaidAmountWithoutDate" xml:space="preserve">
+    <value>The paid amount is filled in, but the payment date is empty.</value>
+  </data>
 </root>

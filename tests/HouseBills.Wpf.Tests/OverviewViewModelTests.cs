@@ -1,6 +1,7 @@
 using HouseBills.Application.Bills;
 using HouseBills.Application.Categories;
 using HouseBills.Application.Common;
+using HouseBills.Application.Import;
 using HouseBills.Application.Overview;
 using HouseBills.Application.Payees;
 using HouseBills.Application.RecurringBills;
@@ -104,7 +105,9 @@ public sealed class OverviewViewModelTests
         Substitute.For<IPayeeService>(),
         Substitute.For<ICategoryService>(),
         _clock,
+        Substitute.For<IImportService>(),
         Substitute.For<IFileSaver>(),
+        Substitute.For<IFileReader>(),
         Substitute.For<IDialogService>(),
         NullLogger<BillsViewModel>.Instance);
 }
