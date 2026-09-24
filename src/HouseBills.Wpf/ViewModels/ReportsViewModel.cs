@@ -7,11 +7,18 @@ using CommunityToolkit.Mvvm.Input;
 using HouseBills.Application.Common;
 using HouseBills.Application.Reports;
 using HouseBills.Presentation.Resources;
+using HouseBills.Wpf.Charts;
 using HouseBills.Wpf.Localization;
 using HouseBills.Wpf.Services;
 using HouseBills.Wpf.ViewModels.Reports;
 
+using LiveChartsCore;
+using LiveChartsCore.SkiaSharpView;
+using LiveChartsCore.SkiaSharpView.Painting;
+
 using Microsoft.Extensions.Logging;
+
+using SkiaSharp;
 
 namespace HouseBills.Wpf.ViewModels;
 
@@ -20,11 +27,13 @@ public sealed partial class ReportsViewModel : PageViewModel
     private const int YearsBack = 5;
 
     private readonly IReportQueries _reports;
+    private readonly IChartColors _chartColors;
 
-    public ReportsViewModel(IReportQueries reports, IClock clock, IDialogService dialogs, ILogger<ReportsViewModel> logger)
+    public ReportsViewModel(IReportQueries reports, IClock clock, IChartColors chartColors, IDialogService dialogs, ILogger<ReportsViewModel> logger)
         : base(dialogs, logger)
     {
         _reports = reports;
+        _chartColors = chartColors;
         var currentYear = clock.Today.Year;
         Years = Enumerable.Range(currentYear - YearsBack, YearsBack + 2).Reverse().ToList();
         SelectedYear = currentYear;
@@ -53,6 +62,35 @@ public sealed partial class ReportsViewModel : PageViewModel
     [ObservableProperty]
     public partial decimal PreviousYearTotal { get; set; }
 
+    /// <summary>Month by month: the previous year next to the selected year.</summary>
+    [ObservableProperty]
+    public partial ISeries[] MonthSeries { get; set; } = [];
+
+    [ObservableProperty]
+    public partial Axis[] MonthXAxes { get; set; } = [];
+
+    [ObservableProperty]
+    public partial Axis[] MonthYAxes { get; set; } = [];
+
+    /// <summary>One slice per category of the selected year.</summary>
+    [ObservableProperty]
+    public partial ISeries[] CategorySeries { get; set; } = [];
+
+    /// <summary>Legend and tooltip text; built with the charts so it matches the current theme.</summary>
+    [ObservableProperty]
+    public partial SolidColorPaint? ChartTextPaint { get; set; }
+
+    [ObservableProperty]
+    public partial SolidColorPaint? TooltipBackgroundPaint { get; set; }
+
+    /// <summary><c>false</c> when neither the selected nor the previous year has bills (the charts would be empty).</summary>
+    [ObservableProperty]
+    public partial bool HasChartData { get; set; }
+
+    /// <summary><c>false</c> when the selected year has no bills (the category chart would be empty).</summary>
+    [ObservableProperty]
+    public partial bool HasCategoryData { get; set; }
+
     public override Task OnNavigatedToAsync()
     {
         return RefreshAsync(CancellationToken.None);
@@ -72,13 +110,11 @@ public sealed partial class ReportsViewModel : PageViewModel
         var max = months.Count == 0 ? 0m : months.Max(m => m.TotalAmount);
         // Month names follow the UI language (Serbian names are lowercase, so capitalize for the table).
         var uiCulture = LocalizedStrings.Culture;
-        var monthNames = uiCulture.DateTimeFormat;
         Months.Clear();
         foreach (var month in months)
         {
             var fraction = max == 0m ? 0d : (double)(month.TotalAmount / max);
-            var monthName = monthNames.GetMonthName(month.Month);
-            Months.Add(new MonthlySummaryItem(uiCulture.TextInfo.ToUpper(monthName[0]) + monthName[1..], month, fraction));
+            Months.Add(new MonthlySummaryItem(Capitalize(uiCulture.DateTimeFormat.GetMonthName(month.Month), uiCulture), month, fraction));
         }
 
         CategoryTotals.Clear();
@@ -91,5 +127,84 @@ public sealed partial class ReportsViewModel : PageViewModel
         YearPaid = months.Sum(m => m.PaidAmount);
         YearOutstanding = months.Sum(m => m.OutstandingAmount);
         PreviousYearTotal = months.Sum(m => m.PreviousYearTotalAmount);
+
+        BuildCharts(year, months, categories);
     }
+
+    /// <summary>
+    /// Rebuilds the charts on every load, so colors (theme), month names (language) and money formats are current.
+    /// </summary>
+    private void BuildCharts(int year, IReadOnlyList<MonthlySummaryRow> months, IReadOnlyList<CategoryTotalRow> categories)
+    {
+        var text = new SolidColorPaint(_chartColors.Text);
+        ChartTextPaint = text;
+        TooltipBackgroundPaint = new SolidColorPaint(_chartColors.TooltipBackground);
+        HasChartData = months.Any(m => m.TotalAmount != 0m || m.PreviousYearTotalAmount != 0m);
+
+        var uiCulture = LocalizedStrings.Culture;
+        MonthXAxes =
+        [
+            new Axis
+            {
+                Labels = Enumerable.Range(1, 12).Select(m => Capitalize(uiCulture.DateTimeFormat.GetAbbreviatedMonthName(m), uiCulture)).ToArray(),
+                LabelsPaint = text,
+                TextSize = 12,
+            },
+        ];
+        MonthYAxes =
+        [
+            new Axis
+            {
+                MinLimit = 0,
+                Labeler = value => FormatMoney((decimal)value, "C0"),
+                LabelsPaint = text,
+                SeparatorsPaint = new SolidColorPaint(_chartColors.Gridlines) { StrokeThickness = 1 },
+                TextSize = 12,
+            },
+        ];
+        MonthSeries =
+        [
+            CreateColumnSeries((year - 1).ToString(CultureInfo.InvariantCulture), months.Select(m => m.PreviousYearTotalAmount), ChartPalette.Comparison),
+            CreateColumnSeries(year.ToString(CultureInfo.InvariantCulture), months.Select(m => m.TotalAmount), ChartPalette.At(0)),
+        ];
+
+        HasCategoryData = categories.Count > 0;
+        var total = categories.Sum(c => c.TotalAmount);
+        CategorySeries = categories
+            .Select((category, index) => (ISeries)new PieSeries<double>
+            {
+                Name = category.CategoryName,
+                Values = [(double)category.TotalAmount],
+                Fill = new SolidColorPaint(ChartPalette.At(index)),
+                InnerRadius = 50,
+                HoverPushout = 6,
+                ToolTipLabelFormatter = _ => FormatShare(category.TotalAmount, total),
+            })
+            .ToArray();
+    }
+
+    private static ColumnSeries<double> CreateColumnSeries(string name, IEnumerable<decimal> values, SKColor color)
+    {
+        return new ColumnSeries<double>
+        {
+            Name = name,
+            Values = values.Select(v => (double)v).ToArray(),
+            Fill = new SolidColorPaint(color),
+            MaxBarWidth = 18,
+            Padding = 2,
+            YToolTipLabelFormatter = point => FormatMoney((decimal)point.Model, "C"),
+        };
+    }
+
+    /// <summary>"1.234,56 RSD (25 %)": the amount and its share of the year.</summary>
+    private static string FormatShare(decimal amount, decimal total)
+    {
+        var money = FormatMoney(amount, "C");
+        return total == 0m ? money : $"{money} ({(amount / total).ToString("P0", LocalizedStrings.FormattingCulture)})";
+    }
+
+    private static string FormatMoney(decimal amount, string format) => amount.ToString(format, LocalizedStrings.FormattingCulture);
+
+    private static string Capitalize(string text, CultureInfo culture) =>
+        text.Length == 0 ? text : culture.TextInfo.ToUpper(text[0]) + text[1..];
 }

@@ -6,6 +6,10 @@
     <UseWPF>true</UseWPF>
     <!-- Regenerate with tools\generate-icon.ps1. -->
     <ApplicationIcon>Assets\HouseBills.ico</ApplicationIcon>
+    <!-- LiveCharts2's WPF host depends on SkiaSharp.Views.WPF 3.119, OpenTK 3.3.1 and OpenTK.GLWpfControl 3.3.0, which
+         only ship .NET Framework builds; they run on .NET through the compatibility shim (NU1701). That is how LiveCharts2
+         is used on modern .NET (the charts render with SkiaSharp's CPU renderer). Suppressed in this project only. -->
+    <NoWarn>$(NoWarn);NU1701</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,6 +25,8 @@
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" />
+    <!-- Charts on the Reports page. See NU1701 above. -->
+    <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <!-- Daily rolling log files (added alongside the default logging providers). -->
     <PackageReference Include="Serilog" />

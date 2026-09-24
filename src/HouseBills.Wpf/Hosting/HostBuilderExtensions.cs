@@ -5,6 +5,7 @@ using HouseBills.Application.RecurringBills;
 using HouseBills.Infrastructure;
 using HouseBills.Infrastructure.Backups;
 using HouseBills.Infrastructure.Preferences;
+using HouseBills.Wpf.Charts;
 using HouseBills.Wpf.Localization;
 using HouseBills.Wpf.Services;
 using HouseBills.Wpf.Theming;
@@ -48,6 +49,7 @@ internal static class HostBuilderExtensions
         services.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
         services.AddSingleton<ILocalizationService, LocalizationService>();
         services.AddSingleton<IThemeService, ThemeService>();
+        services.AddSingleton<IChartColors, FluentChartColors>();
 
         services.AddSingleton<MainViewModel>();
         services.AddSingleton<BillsViewModel>();

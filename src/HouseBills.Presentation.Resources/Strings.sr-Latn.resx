@@ -433,4 +433,10 @@ Trenutni podaci se prvo čuvaju kao sigurnosna kopija u fascikli rezervnih kopij
   <data name="Bills_Search" xml:space="preserve">
     <value>Pretraga</value>
   </data>
+  <data name="Reports_NoChartData" xml:space="preserve">
+    <value>Nema računa u ovoj ni u prethodnoj godini.</value>
+  </data>
+  <data name="Reports_NoCategoryData" xml:space="preserve">
+    <value>Nema računa u ovoj godini.</value>
+  </data>
 </root>

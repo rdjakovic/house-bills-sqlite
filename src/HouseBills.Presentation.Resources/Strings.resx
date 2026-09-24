@@ -433,4 +433,10 @@ Your current data is first saved as a safety copy in the backup folder.</value>
   <data name="Bills_Search" xml:space="preserve">
     <value>Search</value>
   </data>
+  <data name="Reports_NoChartData" xml:space="preserve">
+    <value>No bills in this year or the previous year.</value>
+  </data>
+  <data name="Reports_NoCategoryData" xml:space="preserve">
+    <value>No bills in this year.</value>
+  </data>
 </root>

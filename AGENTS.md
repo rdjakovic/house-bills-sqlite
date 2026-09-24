@@ -19,6 +19,7 @@ Windows desktop line-of-business application backed by a local **SQLite** databa
 | Runtime | **.NET 10 (LTS)** — `net10.0` / `net10.0-windows` |
 | UI | **WPF** with **MVVM** |
 | MVVM toolkit | `CommunityToolkit.Mvvm` |
+| Charts | `LiveChartsCore.SkiaSharpView.WPF` (LiveCharts2) — its WPF host pulls .NET Framework-only SkiaSharp/OpenTK packages, so `NU1701` is suppressed in the WPF project only |
 | DI / hosting / config / logging | `Microsoft.Extensions.Hosting` (Generic Host) |
 | Data access | **EF Core 10** (`Microsoft.EntityFrameworkCore.Sqlite`) |
 | Raw SQL / reporting | **Dapper** on `Microsoft.Data.Sqlite` |

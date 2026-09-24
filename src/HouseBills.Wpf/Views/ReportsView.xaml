@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:HouseBills.Wpf.ViewModels"
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=vm:ReportsViewModel}"
              d:DesignWidth="1000"
@@ -42,9 +43,64 @@
                 <ColumnDefinition Width="3*" />
                 <ColumnDefinition Width="2*" />
             </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="260" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
 
-            <DockPanel Grid.Column="0" Margin="0,0,16,0">
-                <TextBlock DockPanel.Dock="Top" Text="{loc:Tr Reports_ByMonth}" Style="{StaticResource SectionTitleStyle}" />
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="{loc:Tr Reports_ByMonth}" Style="{StaticResource SectionTitleStyle}" />
+            <TextBlock Grid.Row="0" Grid.Column="1" Text="{loc:Tr Reports_ByCategory}" Style="{StaticResource SectionTitleStyle}" />
+
+            <!-- Charts are pictures of the tables below, which stay the accessible, exact view of the numbers. -->
+            <Grid Grid.Row="1" Grid.Column="0" Margin="0,0,16,12">
+                <lvc:CartesianChart Series="{Binding MonthSeries}"
+                                    XAxes="{Binding MonthXAxes}"
+                                    YAxes="{Binding MonthYAxes}"
+                                    LegendPosition="Top"
+                                    LegendTextPaint="{Binding ChartTextPaint}"
+                                    TooltipTextPaint="{Binding ChartTextPaint}"
+                                    TooltipBackgroundPaint="{Binding TooltipBackgroundPaint}"
+                                    ZoomMode="None"
+                                    Background="Transparent"
+                                    Visibility="{Binding HasChartData, Converter={StaticResource BoolToVisibility}}" />
+                <TextBlock Text="{loc:Tr Reports_NoChartData}" Opacity="0.7" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasChartData}" Value="False">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </Grid>
+
+            <Grid Grid.Row="1" Grid.Column="1" Margin="0,0,0,12">
+                <lvc:PieChart Series="{Binding CategorySeries}"
+                              LegendPosition="Right"
+                              Background="Transparent"
+                              LegendTextPaint="{Binding ChartTextPaint}"
+                              TooltipTextPaint="{Binding ChartTextPaint}"
+                              TooltipBackgroundPaint="{Binding TooltipBackgroundPaint}"
+                              Visibility="{Binding HasCategoryData, Converter={StaticResource BoolToVisibility}}" />
+                <TextBlock Text="{loc:Tr Reports_NoCategoryData}" Opacity="0.7" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasCategoryData}" Value="False">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </Grid>
+
+            <DockPanel Grid.Row="2" Grid.Column="0" Margin="0,0,16,0">
                 <DataGrid ItemsSource="{Binding Months}" Style="{StaticResource ListGridStyle}" CanUserSortColumns="False">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="{loc:Tr Column_Month}" Binding="{Binding MonthName}" />
@@ -65,8 +121,7 @@
                 </DataGrid>
             </DockPanel>
 
-            <DockPanel Grid.Column="1">
-                <TextBlock DockPanel.Dock="Top" Text="{loc:Tr Reports_ByCategory}" Style="{StaticResource SectionTitleStyle}" />
+            <DockPanel Grid.Row="2" Grid.Column="1">
                 <DataGrid ItemsSource="{Binding CategoryTotals}" Style="{StaticResource ListGridStyle}">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="{loc:Tr Field_Category}" Binding="{Binding CategoryName}" Width="*" />

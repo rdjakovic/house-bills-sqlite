@@ -2,6 +2,7 @@ using System.Globalization;
 
 using HouseBills.Application.Common;
 using HouseBills.Application.Reports;
+using HouseBills.Wpf.Charts;
 using HouseBills.Wpf.Services;
 using HouseBills.Wpf.ViewModels;
 
@@ -28,12 +29,13 @@ public sealed class SerbianReportsTests : IDisposable
         reports.GetMonthlySummaryAsync(2026, Arg.Any<CancellationToken>())
             .Returns(Enumerable.Range(1, 12).Select(m => new MonthlySummaryRow(m, 0, 0m, 0m, 0m, 0m)).ToList());
         reports.GetCategoryTotalsAsync(Arg.Any<DateOnly>(), Arg.Any<DateOnly>(), Arg.Any<CancellationToken>()).Returns([]);
-        var viewModel = new ReportsViewModel(reports, clock, Substitute.For<IDialogService>(), NullLogger<ReportsViewModel>.Instance);
+        var viewModel = new ReportsViewModel(reports, clock, Substitute.For<IChartColors>(), Substitute.For<IDialogService>(), NullLogger<ReportsViewModel>.Instance);
 
         await viewModel.OnNavigatedToAsync();
 
         viewModel.Months[0].MonthName.ShouldBe("Januar");
         viewModel.Months[11].MonthName.ShouldBe("Decembar");
+        viewModel.MonthXAxes[0].Labels![0].ShouldStartWith("Jan");
         viewModel.Title.ShouldBe("Izveštaji");
     }
 }

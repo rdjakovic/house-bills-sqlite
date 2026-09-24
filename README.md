@@ -13,7 +13,7 @@ Built with .NET 10, WPF (Fluent theme) and SQLite. Everything stays on your own 
 - **Bills** — add, edit and delete bills; record payments (date and amount) or mark a bill unpaid again. Filter by status, due-date range, category or payee, or search by text (description, payee, category or notes). Each bill is shown as **Overdue**, **Due soon** (within 7 days), **Upcoming** or **Paid**, with totals and the outstanding amount.
 - **Recurring bills** — templates that repeat weekly, monthly, quarterly or yearly, with an optional end date. Bills are generated automatically for the next 31 days when the app starts (and on demand). Pausing and resuming a template doesn't back-fill the paused period; deleting a generated bill doesn't bring it back.
 - **Payees and categories** — names are unique; anything still in use can't be deleted. Seven starter categories are created with the database.
-- **Reports** — monthly totals for a year compared with the previous year, and totals per category.
+- **Reports** — a column chart of each month against the previous year and a doughnut chart of spending per category, with the exact numbers in tables below. Charts follow the light/dark theme and the chosen language.
 - **English or Srpski** — choose the language under **Settings** (bottom of the menu); it switches immediately and is remembered. Serbian also uses Serbian formats (`1.234,56 RSD`, `24.9.2026.`); English follows your Windows regional settings.
 - **Backups** — a backup every day (the last 14 are kept), **Back up now…** to any folder or USB stick, and **Restore from backup…** in **Settings**. Restoring first saves your current data as a safety copy.
 - **Keyboard and mouse shortcuts** — double-click or **Enter** on a row to edit it, **Delete** to delete it, **Ctrl+N** for a new item, **Esc** to close the editor, **F5** to refresh the bills list. Click a column header to sort.
@@ -110,7 +110,7 @@ dotnet ef migrations script --idempotent -p src/HouseBills.Infrastructure -s src
 powershell -ExecutionPolicy Bypass -File installer\build-installer.ps1 -Version 1.0.0
 ```
 
-This publishes the app self-contained for win-x64 and compiles `installer\HouseBills.iss`. Output: `artifacts\installer\HouseBills-Setup-1.0.0.exe` (~47 MB). SQLite's native library (`e_sqlite3.dll`) is part of the published app and has no other dependencies.
+This publishes the app self-contained for win-x64 and compiles `installer\HouseBills.iss`. Output: `artifacts\installer\HouseBills-Setup-1.0.0.exe` (~52 MB). SQLite's and SkiaSharp's native libraries (`e_sqlite3.dll`, `libSkiaSharp.dll`, `libHarfBuzzSharp.dll`) are part of the published app and only use DLLs that come with Windows.
 
 Test installer changes on a **clean** Windows (e.g. Windows Sandbox), not only on your dev PC — the dev PC already has runtimes the target PC may not.
 
@@ -161,7 +161,7 @@ All user-facing text is in resource files, English plus a Serbian (Latin) transl
 
 ### Tech stack
 
-.NET 10 · WPF with the Fluent theme · CommunityToolkit.Mvvm · Generic Host (DI, config, logging) · EF Core 10 (SQLite) · Dapper · Serilog (daily log files) · xUnit v3, Shouldly, NSubstitute · Inno Setup.
+.NET 10 · WPF with the Fluent theme · CommunityToolkit.Mvvm · Generic Host (DI, config, logging) · EF Core 10 (SQLite) · Dapper · LiveCharts2 (charts, on SkiaSharp) · Serilog (daily log files) · xUnit v3, Shouldly, NSubstitute · Inno Setup.
 
 Package versions are pinned centrally in `Directory.Packages.props`. Coding conventions and rules for contributors (and AI agents) are in [`AGENTS.md`](AGENTS.md).
 
