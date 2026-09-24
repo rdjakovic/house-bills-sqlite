@@ -14,15 +14,14 @@
     <PackageVersion Include="Serilog.Extensions.Logging" Version="10.0.0" />
     <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
     <!-- Data -->
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.12" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12" />
-    <!-- Pinned to the version EF Core 10.0.12 depends on. -->
-    <PackageVersion Include="Microsoft.Data.SqlClient" Version="6.1.6" />
+    <!-- Same version as EF Core's SQLite provider uses; Dapper runs on it too. -->
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.12" />
     <PackageVersion Include="Dapper" Version="2.1.89" />
     <!-- Tests -->
     <PackageVersion Include="xunit.v3" Version="4.0.1" />
     <PackageVersion Include="Shouldly" Version="4.3.0" />
     <PackageVersion Include="NSubstitute" Version="6.2.0" />
-    <PackageVersion Include="Testcontainers.MsSql" Version="4.15.0" />
   </ItemGroup>
 </Project>

@@ -11,9 +11,9 @@ internal sealed class RecurringBillConfiguration : IEntityTypeConfiguration<Recu
     {
         builder.ToTable("RecurringBills");
         builder.HasKey(r => r.Id);
-        builder.Property(r => r.RowVersion).IsRowVersion();
-        builder.Property(r => r.Name).HasMaxLength(RecurringBill.NameMaxLength).IsRequired();
-        builder.Property(r => r.Amount).HasPrecision(MoneyRules.Precision, MoneyRules.Scale);
+        builder.HasAppRowVersion();
+        builder.Property(r => r.Name).HasMaxLength(RecurringBill.NameMaxLength).IsRequired().UseCollation("NOCASE");
+        builder.Property(r => r.Amount).StoredAsMinorUnits();
         builder.Property(r => r.Frequency).IsRequired();
         builder.Property(r => r.StartDate).IsRequired();
         builder.Property(r => r.Notes).HasMaxLength(RecurringBill.NotesMaxLength);

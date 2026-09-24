@@ -7,7 +7,9 @@ Read this file fully before making changes. When in doubt, follow the convention
 
 ## 1. Project overview
 
-Windows desktop line-of-business application backed by **Microsoft SQL Server**.
+Windows desktop line-of-business application backed by a local **SQLite** database file (one per Windows user).
+
+> This repository is the SQLite edition of `house-bills` (which uses Microsoft SQL Server / LocalDB). The switch to SQLite was explicitly approved: the app is single-user per PC, and SQLite removes the database server, the installer prerequisites and admin rights. A shared household database or API mode would need a server database again (see §7).
 
 **Stack (do not change without explicit approval):**
 
@@ -18,12 +20,12 @@ Windows desktop line-of-business application backed by **Microsoft SQL Server**.
 | UI | **WPF** with **MVVM** |
 | MVVM toolkit | `CommunityToolkit.Mvvm` |
 | DI / hosting / config / logging | `Microsoft.Extensions.Hosting` (Generic Host) |
-| Data access | **EF Core 10** (`Microsoft.EntityFrameworkCore.SqlServer`) |
-| Raw SQL / reporting | **Dapper** on `Microsoft.Data.SqlClient` |
+| Data access | **EF Core 10** (`Microsoft.EntityFrameworkCore.Sqlite`) |
+| Raw SQL / reporting | **Dapper** on `Microsoft.Data.Sqlite` |
 | API (when enabled) | **ASP.NET Core Web API** on .NET 10 |
 | Tests | xUnit, FluentAssertions (or Shouldly), NSubstitute |
 
-Never use: `System.Data.SqlClient` (legacy), EF6, .NET Framework 4.x, WinForms (unless explicitly asked), code-behind business logic.
+Never use: `System.Data.SQLite` or `System.Data.SqlClient` (legacy), EF6, .NET Framework 4.x, WinForms (unless explicitly asked), code-behind business logic.
 
 ---
 
@@ -58,7 +60,7 @@ src/
 tests/
   MyApp.Domain.Tests/
   MyApp.Application.Tests/
-  MyApp.Infrastructure.Tests/   # Integration tests against a real SQL Server (Testcontainers or LocalDB)
+  MyApp.Infrastructure.Tests/   # Integration tests against real SQLite database files
   MyApp.Wpf.Tests/              # ViewModel tests (no UI automation required)
 ```
 
@@ -100,33 +102,35 @@ Rules:
 
 ---
 
-## 6. Data layer (EF Core 10 + Dapper, SQL Server)
+## 6. Data layer (EF Core 10 + Dapper, SQLite)
 
 ### EF Core (default for CRUD and domain persistence)
 - One `AppDbContext` in `MyApp.Infrastructure`, registered with `AddDbContextFactory` / `AddDbContext` as appropriate.
   - **WPF client:** use `IDbContextFactory<AppDbContext>` and create a short-lived context per operation (`await using var db = await factory.CreateDbContextAsync(ct);`). **Never** keep a long-lived DbContext per window or per app.
 - Entity configuration via `IEntityTypeConfiguration<T>` classes — no data annotations on domain entities.
-- Always configure explicitly: string max lengths, decimal precision (`HasPrecision`), required/optional, indexes, keys.
+- Always configure explicitly: string max lengths, money conversion (see SQLite specifics), required/optional, indexes, keys.
 - Read-only queries: `AsNoTracking()`; project to DTOs with `Select(...)` instead of loading full graphs.
 - Avoid N+1: use projection or explicit `Include` deliberately; review generated SQL for non-trivial queries (`ToQueryString()`).
-- Concurrency: use `rowversion` columns (`IsRowVersion()`) on entities edited by multiple users; handle `DbUpdateConcurrencyException`.
+- Concurrency: every entity has a `RowVersion` concurrency token (`HasAppRowVersion()`); SQLite has no `rowversion`, so `AppDbContext` issues a new random token on every insert/update. Handle `DbUpdateConcurrencyException`.
 - **Migrations** are the source of truth for schema:
   - `dotnet ef migrations add <Name> -p src/MyApp.Infrastructure -s src/MyApp.Wpf` (or `-s src/MyApp.Api`)
   - Review every generated migration before committing. Never edit an applied migration; add a new one.
-  - Production deployment uses generated idempotent scripts (`dotnet ef migrations script --idempotent`), not `Database.Migrate()` at app startup on client machines.
-  - **Exception — LocalDB only:** when the connection string points at SQL Server LocalDB (`(localdb)\...`), the app creates/migrates the database at startup (`LocalDbInitializer`), because a LocalDB database is private to one Windows user and is the only way the installer-based, per-PC deployment works without manual steps. It also re-attaches a LocalDB database whose files exist but which is no longer registered. Any other server (shared SQL Server / API mode) is never migrated by the client.
+  - The app creates/migrates its database at startup (`SqliteDatabaseInitializer`): the database is a file in the Windows user's own profile, so there is no shared schema to protect, and it is the only way the installer-based, per-user deployment works without manual steps. If a shared server database is ever added (API mode, §7), that server is deployed with idempotent scripts (`dotnet ef migrations script --idempotent`) and never migrated by the client.
+  - SQLite can't alter columns in place; EF Core rebuilds the table for such changes. Review those migrations closely.
 
 ### Dapper (reporting, complex/performance-critical SQL, stored procedures)
 - Lives in `MyApp.Infrastructure` behind Application interfaces (e.g. `IReportQueries`).
 - **Always parameterized** — never string-concatenate user input into SQL.
 - SQL in `const string` / raw string literals or `.sql` embedded resources, not built dynamically unless unavoidable (then whitelist identifiers).
 - Map to DTO `record`s; don't return Dapper dynamics out of Infrastructure.
-- Use `Microsoft.Data.SqlClient.SqlConnection` from an injected connection factory.
+- Use `Microsoft.Data.Sqlite.SqliteConnection` from an injected connection factory.
 
-### SQL Server specifics
-- Prefer set-based SQL; watch for non-SARGable predicates (functions on columns, leading-wildcard `LIKE`) on large tables.
-- Stored procedures are allowed for heavy reporting/batch work; call them via Dapper or `FromSql`.
-- Use `datetime2` (not `datetime`), `nvarchar` with explicit lengths, `decimal(p,s)` for money.
+### SQLite specifics
+- **Money** is stored as INTEGER minor units (paras/cents) via `StoredAsMinorUnits()`; SQLite has no decimal type, and EF Core's default (TEXT) can't be summed or compared exactly in SQL. Dapper queries sum the integers and convert to `decimal` in C#.
+- **Dates** (`DateOnly`) are stored as `'yyyy-MM-dd'` TEXT; compare them against parameters in the same format so range predicates stay index-friendly. Apply `strftime()` only after filtering.
+- **Text comparison** is case-sensitive by default; names that must be unique regardless of case use `UseCollation("NOCASE")` (ASCII-only case folding).
+- Integers come back from SQLite as `Int64`; map Dapper results to `long` and convert.
+- Column max lengths are not enforced by SQLite; the domain validates them.
 
 ---
 
@@ -172,7 +176,7 @@ WPF client  →  HTTPS  →  ASP.NET Core Web API  →  SQL Server
 
 - New business logic in Application/Domain **must** have unit tests.
 - ViewModels are unit-tested by mocking Application interfaces and navigation/dialog services.
-- Data access is tested with **integration tests against real SQL Server** (Testcontainers `mssql` image or LocalDB) — do not rely on the EF Core InMemory provider for query behaviour.
+- Data access is tested with **integration tests against real SQLite database files** (created with the real migrations) — do not rely on the EF Core InMemory provider for query behaviour.
 - Test naming: `MethodName_StateUnderTest_ExpectedBehavior`.
 - All tests must pass before a change is considered done.
 

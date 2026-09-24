@@ -3,14 +3,12 @@ using HouseBills.Application.Common;
 using HouseBills.Application.Persistence;
 using HouseBills.Domain;
 
-using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
 
 namespace HouseBills.Infrastructure.Tests;
 
-[Collection(SqlServerCollection.Name)]
-public sealed class RepositoryTests(SqlServerFixture fixture)
+[Collection(SqliteCollection.Name)]
+public sealed class RepositoryTests(SqliteFixture fixture)
 {
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
@@ -60,16 +58,16 @@ public sealed class RepositoryTests(SqlServerFixture fixture)
         var payee = new Payee(Unique("Filter payee"), null, null);
         await fixture.Get<IPayeeRepository>().AddAsync(payee, Ct);
         var bills = fixture.Get<IBillRepository>();
-        var overdue = new Bill("Overdue", payee.Id, 1, 10m, SqlServerFixture.Today.AddDays(-3), null);
-        var paid = new Bill("Paid", payee.Id, 1, 10m, SqlServerFixture.Today.AddDays(-3), null);
-        paid.MarkPaid(SqlServerFixture.Today, 10m);
-        var upcoming = new Bill("Upcoming", payee.Id, 1, 10m, SqlServerFixture.Today.AddDays(3), null);
+        var overdue = new Bill("Overdue", payee.Id, 1, 10m, SqliteFixture.Today.AddDays(-3), null);
+        var paid = new Bill("Paid", payee.Id, 1, 10m, SqliteFixture.Today.AddDays(-3), null);
+        paid.MarkPaid(SqliteFixture.Today, 10m);
+        var upcoming = new Bill("Upcoming", payee.Id, 1, 10m, SqliteFixture.Today.AddDays(3), null);
         foreach (var bill in new[] { overdue, paid, upcoming })
         {
             await bills.AddAsync(bill, Ct);
         }
 
-        var result = await bills.ListAsync(new BillFilter(null, null, BillStatusFilter.Overdue, PayeeId: payee.Id), SqlServerFixture.Today, Ct);
+        var result = await bills.ListAsync(new BillFilter(null, null, BillStatusFilter.Overdue, PayeeId: payee.Id), SqliteFixture.Today, Ct);
 
         var item = result.ShouldHaveSingleItem();
         item.Description.ShouldBe("Overdue");
@@ -83,37 +81,45 @@ public sealed class RepositoryTests(SqlServerFixture fixture)
         var payees = fixture.Get<IPayeeRepository>();
         var payee = new Payee(Unique("Used payee"), null, null);
         await payees.AddAsync(payee, Ct);
-        await fixture.Get<IBillRepository>().AddAsync(new Bill("Gas", payee.Id, 1, 5m, SqlServerFixture.Today, null), Ct);
+        await fixture.Get<IBillRepository>().AddAsync(new Bill("Gas", payee.Id, 1, 5m, SqliteFixture.Today, null), Ct);
 
         (await payees.IsInUseAsync(payee.Id, Ct)).ShouldBeTrue();
     }
 
     [Fact]
-    public async Task InitializeAsync_NonLocalDbServer_LeavesSchemaUntouched()
+    public async Task NameExistsAsync_SameNameDifferentCase_ReturnsTrue()
     {
-        var connectionString = new SqlConnectionStringBuilder(fixture.ConnectionString)
-        {
-            InitialCatalog = $"NotCreated_{Guid.NewGuid():N}",
-        };
-        var configuration = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                [$"ConnectionStrings:{DependencyInjection.ConnectionStringName}"] = connectionString.ConnectionString,
-            })
-            .Build();
-        await using var services = new ServiceCollection()
-            .AddLogging()
-            .AddInfrastructure(configuration)
-            .BuildServiceProvider();
+        (await fixture.Get<ICategoryRepository>().NameExistsAsync("UTILITIES", null, Ct)).ShouldBeTrue();
+    }
 
-        await services.GetRequiredService<IDatabaseInitializer>().InitializeAsync(Ct);
+    [Fact]
+    public async Task AddAsync_NameDiffersOnlyInCase_ViolatesUniqueIndex()
+    {
+        var repository = fixture.Get<IPayeeRepository>();
+        var name = Unique("Gas Co");
+        await repository.AddAsync(new Payee(name, null, null), Ct);
 
-        await using var master = new SqlConnection(fixture.ConnectionString);
-        await master.OpenAsync(Ct);
-        await using var command = master.CreateCommand();
-        command.CommandText = "SELECT DB_ID(@name)";
-        command.Parameters.AddWithValue("@name", connectionString.InitialCatalog);
-        (await command.ExecuteScalarAsync(Ct)).ShouldBe(DBNull.Value);
+        await Should.ThrowAsync<DbUpdateException>(() => repository.AddAsync(new Payee(name.ToUpperInvariant(), null, null), Ct));
+    }
+
+    [Theory]
+    [InlineData("0.01")]
+    [InlineData("1234.56")]
+    [InlineData("9999999999999999.99")]
+    public async Task GetAsync_StoredAmount_RoundTripsExactly(string amountText)
+    {
+        var amount = decimal.Parse(amountText, System.Globalization.CultureInfo.InvariantCulture);
+        var payee = new Payee(Unique("Amount payee"), null, null);
+        await fixture.Get<IPayeeRepository>().AddAsync(payee, Ct);
+        var bills = fixture.Get<IBillRepository>();
+        var bill = new Bill("Amount", payee.Id, 1, amount, SqliteFixture.Today, null);
+        bill.MarkPaid(SqliteFixture.Today, amount);
+        await bills.AddAsync(bill, Ct);
+
+        var loaded = (await bills.GetAsync(bill.Id, Ct))!;
+
+        loaded.Amount.ShouldBe(amount);
+        loaded.PaidAmount.ShouldBe(amount);
     }
 
     private static string Unique(string name) => $"{name} {Guid.NewGuid():N}";

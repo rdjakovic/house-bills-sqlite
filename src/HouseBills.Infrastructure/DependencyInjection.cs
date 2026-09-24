@@ -7,6 +7,7 @@ using HouseBills.Infrastructure.Persistence.Repositories;
 using HouseBills.Infrastructure.Preferences;
 using HouseBills.Infrastructure.Reports;
 
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,13 +18,13 @@ public static class DependencyInjection
 {
     public const string ConnectionStringName = "HouseBills";
 
-    /// <summary>Registers direct SQL Server persistence (EF Core + Dapper) for the Application interfaces.</summary>
+    /// <summary>Registers local SQLite persistence (EF Core + Dapper) for the Application interfaces.</summary>
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = GetRequiredConnectionString(configuration);
 
-        services.AddDbContextFactory<AppDbContext>(options => options.UseSqlServer(connectionString));
-        services.AddSingleton<ISqlConnectionFactory>(new SqlConnectionFactory(connectionString));
+        services.AddDbContextFactory<AppDbContext>(options => options.UseSqlite(connectionString));
+        services.AddSingleton<ISqlConnectionFactory>(new SqliteConnectionFactory(connectionString));
 
         services.AddSingleton(TimeProvider.System);
         services.AddSingleton<IClock, SystemClock>();
@@ -32,7 +33,7 @@ public static class DependencyInjection
         services.AddSingleton<IRecurringBillRepository, RecurringBillRepository>();
         services.AddSingleton<IBillRepository, BillRepository>();
         services.AddSingleton<IReportQueries, ReportQueries>();
-        services.AddSingleton<IDatabaseInitializer, LocalDbInitializer>();
+        services.AddSingleton<IDatabaseInitializer, SqliteDatabaseInitializer>();
 
         services.AddOptions<UserPreferencesOptions>();
         services.AddSingleton<IUserPreferencesStore, JsonUserPreferencesStore>();
@@ -40,11 +41,20 @@ public static class DependencyInjection
         return services;
     }
 
+    /// <summary>
+    /// Reads the SQLite connection string and expands environment variables such as <c>%LOCALAPPDATA%</c> in its
+    /// data source (SQLite itself doesn't).
+    /// </summary>
     internal static string GetRequiredConnectionString(IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString(ConnectionStringName);
-        return string.IsNullOrWhiteSpace(connectionString)
-            ? throw new InvalidOperationException($"Connection string '{ConnectionStringName}' is not configured.")
-            : connectionString;
+        var configured = configuration.GetConnectionString(ConnectionStringName);
+        if (string.IsNullOrWhiteSpace(configured))
+        {
+            throw new InvalidOperationException($"Connection string '{ConnectionStringName}' is not configured.");
+        }
+
+        var builder = new SqliteConnectionStringBuilder(configured);
+        builder.DataSource = Environment.ExpandEnvironmentVariables(builder.DataSource);
+        return builder.ConnectionString;
     }
 }

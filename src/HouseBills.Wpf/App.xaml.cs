@@ -7,6 +7,7 @@ using HouseBills.Application.Common;
 using HouseBills.Presentation.Resources;
 using HouseBills.Wpf.Hosting;
 using HouseBills.Wpf.Localization;
+using HouseBills.Wpf.Theming;
 using HouseBills.Wpf.Views;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -48,6 +49,7 @@ public partial class App : System.Windows.Application
         var localization = _host.Services.GetRequiredService<ILocalizationService>();
         await localization.InitializeAsync(CancellationToken.None);
         DatePickerWatermark.Register();
+        await _host.Services.GetRequiredService<IThemeService>().InitializeAsync(CancellationToken.None);
 
         // Bindings (dates, number input) format and parse with the chosen language's formats instead of WPF's en-US
         // default. This default can be set only once; later language changes update open windows directly.
@@ -73,13 +75,13 @@ public partial class App : System.Windows.Application
     }
 
     /// <summary>
-    /// Creates/upgrades a private LocalDB database before the first page loads. If that takes longer than
+    /// Creates/upgrades the private SQLite database before the first page loads. If that takes longer than
     /// <see cref="StartupWindowDelay"/>, a "Starting HouseBills…" window is shown and returned so the caller closes it
     /// once the main window is up. On failure the main window still opens (pages then report the problem).
     /// </summary>
     private async Task<StartupWindow?> InitializeDatabaseAsync(IServiceProvider services)
     {
-        // Off the UI thread: parts of it are synchronous (LocalDB instance start, EF model building) and would
+        // Off the UI thread: parts of it are synchronous (SQLite file I/O, EF model building) and would
         // otherwise keep the startup window from rendering.
         var initializer = services.GetRequiredService<IDatabaseInitializer>();
         var initialization = Task.Run(() => initializer.InitializeAsync(CancellationToken.None));

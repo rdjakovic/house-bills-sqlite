@@ -11,17 +11,17 @@ internal sealed class CategoryConfiguration : IEntityTypeConfiguration<Category>
     {
         builder.ToTable("Categories");
         builder.HasKey(c => c.Id);
-        builder.Property(c => c.RowVersion).IsRowVersion();
-        builder.Property(c => c.Name).HasMaxLength(Category.NameMaxLength).IsRequired();
+        builder.HasAppRowVersion();
+        builder.Property(c => c.Name).HasMaxLength(Category.NameMaxLength).IsRequired().UseCollation("NOCASE");
         builder.HasIndex(c => c.Name).IsUnique();
 
         builder.HasData(
-            new { Id = 1, Name = "Utilities" },
-            new { Id = 2, Name = "Rent / Mortgage" },
-            new { Id = 3, Name = "Internet & Phone" },
-            new { Id = 4, Name = "Insurance" },
-            new { Id = 5, Name = "Taxes & Fees" },
-            new { Id = 6, Name = "Subscriptions" },
-            new { Id = 7, Name = "Other" });
+            new { Id = 1, Name = "Utilities", RowVersion = ConcurrencyToken.Seeded },
+            new { Id = 2, Name = "Rent / Mortgage", RowVersion = ConcurrencyToken.Seeded },
+            new { Id = 3, Name = "Internet & Phone", RowVersion = ConcurrencyToken.Seeded },
+            new { Id = 4, Name = "Insurance", RowVersion = ConcurrencyToken.Seeded },
+            new { Id = 5, Name = "Taxes & Fees", RowVersion = ConcurrencyToken.Seeded },
+            new { Id = 6, Name = "Subscriptions", RowVersion = ConcurrencyToken.Seeded },
+            new { Id = 7, Name = "Other", RowVersion = ConcurrencyToken.Seeded });
     }
 }

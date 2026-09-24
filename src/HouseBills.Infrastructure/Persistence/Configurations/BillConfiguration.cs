@@ -11,10 +11,10 @@ internal sealed class BillConfiguration : IEntityTypeConfiguration<Bill>
     {
         builder.ToTable("Bills");
         builder.HasKey(b => b.Id);
-        builder.Property(b => b.RowVersion).IsRowVersion();
-        builder.Property(b => b.Description).HasMaxLength(Bill.DescriptionMaxLength).IsRequired();
-        builder.Property(b => b.Amount).HasPrecision(MoneyRules.Precision, MoneyRules.Scale);
-        builder.Property(b => b.PaidAmount).HasPrecision(MoneyRules.Precision, MoneyRules.Scale);
+        builder.HasAppRowVersion();
+        builder.Property(b => b.Description).HasMaxLength(Bill.DescriptionMaxLength).IsRequired().UseCollation("NOCASE");
+        builder.Property(b => b.Amount).StoredAsMinorUnits();
+        builder.Property(b => b.PaidAmount).StoredAsMinorUnits();
         builder.Property(b => b.Notes).HasMaxLength(Bill.NotesMaxLength);
         builder.Ignore(b => b.IsPaid);
 
@@ -22,9 +22,8 @@ internal sealed class BillConfiguration : IEntityTypeConfiguration<Bill>
         builder.HasOne<Category>().WithMany().HasForeignKey(b => b.CategoryId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<RecurringBill>().WithMany().HasForeignKey(b => b.RecurringBillId).OnDelete(DeleteBehavior.SetNull);
 
-        // Bill list and reports filter on a due-date range; include the columns they aggregate so the index covers them.
-        builder.HasIndex(b => b.DueDate)
-            .IncludeProperties(b => new { b.Amount, b.PaidOn, b.PaidAmount, b.CategoryId });
+        // Bill list and reports filter on a due-date range (dates are stored as sortable 'yyyy-MM-dd' text).
+        builder.HasIndex(b => b.DueDate);
 
         // Safety net against generating the same occurrence twice.
         builder.HasIndex(b => new { b.RecurringBillId, b.DueDate }).IsUnique();

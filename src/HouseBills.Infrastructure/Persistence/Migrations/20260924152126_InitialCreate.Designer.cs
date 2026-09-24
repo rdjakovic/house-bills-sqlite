@@ -3,7 +3,6 @@ using System;
 using HouseBills.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
@@ -12,64 +11,56 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HouseBills.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260924084023_InitialCreate")]
+    [Migration("20260924152126_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.12")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128);
-
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.12");
 
             modelBuilder.Entity("HouseBills.Domain.Bill", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("Amount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<long>("Amount")
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("CategoryId")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("TEXT")
+                        .UseCollation("NOCASE");
 
                     b.Property<DateOnly>("DueDate")
-                        .HasColumnType("date");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Notes")
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("TEXT");
 
-                    b.Property<decimal?>("PaidAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<long?>("PaidAmount")
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateOnly?>("PaidOn")
-                        .HasColumnType("date");
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("PayeeId")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int?>("RecurringBillId")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("BLOB");
 
                     b.HasKey("Id");
 
@@ -77,13 +68,10 @@ namespace HouseBills.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("DueDate");
 
-                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("DueDate"), new[] { "Amount", "PaidOn", "PaidAmount", "CategoryId" });
-
                     b.HasIndex("PayeeId");
 
                     b.HasIndex("RecurringBillId", "DueDate")
-                        .IsUnique()
-                        .HasFilter("[RecurringBillId] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("Bills", (string)null);
                 });
@@ -92,20 +80,18 @@ namespace HouseBills.Infrastructure.Persistence.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("TEXT")
+                        .UseCollation("NOCASE");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("BLOB");
 
                     b.HasKey("Id");
 
@@ -118,37 +104,44 @@ namespace HouseBills.Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = 1,
-                            Name = "Utilities"
+                            Name = "Utilities",
+                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 }
                         },
                         new
                         {
                             Id = 2,
-                            Name = "Rent / Mortgage"
+                            Name = "Rent / Mortgage",
+                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 }
                         },
                         new
                         {
                             Id = 3,
-                            Name = "Internet & Phone"
+                            Name = "Internet & Phone",
+                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 }
                         },
                         new
                         {
                             Id = 4,
-                            Name = "Insurance"
+                            Name = "Insurance",
+                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 }
                         },
                         new
                         {
                             Id = 5,
-                            Name = "Taxes & Fees"
+                            Name = "Taxes & Fees",
+                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 }
                         },
                         new
                         {
                             Id = 6,
-                            Name = "Subscriptions"
+                            Name = "Subscriptions",
+                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 }
                         },
                         new
                         {
                             Id = 7,
-                            Name = "Other"
+                            Name = "Other",
+                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 }
                         });
                 });
 
@@ -156,28 +149,26 @@ namespace HouseBills.Infrastructure.Persistence.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("AccountReference")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("TEXT")
+                        .UseCollation("NOCASE");
 
                     b.Property<string>("Notes")
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("TEXT");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("BLOB");
 
                     b.HasKey("Id");
 
@@ -191,49 +182,46 @@ namespace HouseBills.Infrastructure.Persistence.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("Amount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<long>("Amount")
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("CategoryId")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateOnly?>("EndDate")
-                        .HasColumnType("date");
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("Frequency")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateOnly?>("GeneratedThrough")
-                        .HasColumnType("date");
+                        .HasColumnType("TEXT");
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("TEXT")
+                        .UseCollation("NOCASE");
 
                     b.Property<string>("Notes")
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("PayeeId")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("BLOB");
 
                     b.Property<DateOnly>("StartDate")
-                        .HasColumnType("date");
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 

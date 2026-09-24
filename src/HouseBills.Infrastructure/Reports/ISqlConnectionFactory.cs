@@ -1,9 +1,9 @@
-using Microsoft.Data.SqlClient;
+using Microsoft.Data.Sqlite;
 
 namespace HouseBills.Infrastructure.Reports;
 
 /// <summary>Creates (unopened) connections for Dapper queries.</summary>
 internal interface ISqlConnectionFactory
 {
-    SqlConnection Create();
+    SqliteConnection Create();
 }

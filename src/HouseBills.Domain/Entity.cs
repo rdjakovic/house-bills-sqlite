@@ -7,6 +7,6 @@ public abstract class Entity
 {
     public int Id { get; private set; }
 
-    /// <summary>Server-generated concurrency token (SQL Server <c>rowversion</c>).</summary>
+    /// <summary>Optimistic-concurrency token; persistence issues a new one on every save.</summary>
     public byte[] RowVersion { get; private set; } = [];
 }

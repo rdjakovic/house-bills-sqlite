@@ -19,6 +19,39 @@
                       DisplayMemberPath="DisplayName"
                       HorizontalAlignment="Stretch" />
             <TextBlock Text="{loc:Tr Settings_LanguageNote}" Opacity="0.7" TextWrapping="Wrap" Margin="0,8,0,0" />
+
+            <TextBlock Text="{loc:Tr Settings_Theme}" Style="{StaticResource FieldLabelStyle}" Margin="0,24,0,0" />
+            <ComboBox ItemsSource="{Binding Themes}"
+                      SelectedItem="{Binding SelectedTheme}"
+                      AutomationProperties.Name="{loc:Tr Settings_Theme}"
+                      HorizontalAlignment="Stretch">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock>
+                            <TextBlock.Text>
+                                <!-- The second binding only re-runs the converter when the language changes. -->
+                                <MultiBinding Converter="{StaticResource EnumText}">
+                                    <Binding />
+                                    <Binding Source="{x:Static loc:LocalizedStrings.Instance}" Path="[Settings_Theme]" />
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+                <ComboBox.ItemContainerStyle>
+                    <!-- Screen readers would otherwise announce the enum name in English. -->
+                    <Style TargetType="ComboBoxItem" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
+                        <Setter Property="AutomationProperties.Name">
+                            <Setter.Value>
+                                <MultiBinding Converter="{StaticResource EnumText}">
+                                    <Binding />
+                                    <Binding Source="{x:Static loc:LocalizedStrings.Instance}" Path="[Settings_Theme]" />
+                                </MultiBinding>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ComboBox.ItemContainerStyle>
+            </ComboBox>
         </StackPanel>
     </StackPanel>
 </UserControl>

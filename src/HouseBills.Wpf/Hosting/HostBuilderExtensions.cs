@@ -6,6 +6,7 @@ using HouseBills.Infrastructure;
 using HouseBills.Infrastructure.Preferences;
 using HouseBills.Wpf.Localization;
 using HouseBills.Wpf.Services;
+using HouseBills.Wpf.Theming;
 using HouseBills.Wpf.ViewModels;
 using HouseBills.Wpf.Views;
 
@@ -30,7 +31,7 @@ internal static class HostBuilderExtensions
         builder.Services.AddApplication();
         builder.Services.AddOptions<BillingOptions>().BindConfiguration(BillingOptions.SectionName);
 
-        // Direct SQL Server mode. For API mode, swap this for an Api.Client registration.
+        // Local SQLite mode. For API mode, swap this for an Api.Client registration.
         builder.Services.AddInfrastructure(builder.Configuration);
         builder.Services.AddOptions<UserPreferencesOptions>().BindConfiguration("UserPreferences");
 
@@ -44,6 +45,7 @@ internal static class HostBuilderExtensions
         services.AddSingleton<IDialogService, DialogService>();
         services.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
         services.AddSingleton<ILocalizationService, LocalizationService>();
+        services.AddSingleton<IThemeService, ThemeService>();
 
         services.AddSingleton<MainViewModel>();
         services.AddSingleton<BillsViewModel>();

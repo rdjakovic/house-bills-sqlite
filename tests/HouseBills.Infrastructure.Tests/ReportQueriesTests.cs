@@ -4,8 +4,8 @@ using HouseBills.Domain;
 
 namespace HouseBills.Infrastructure.Tests;
 
-[Collection(SqlServerCollection.Name)]
-public sealed class ReportQueriesTests(SqlServerFixture fixture)
+[Collection(SqliteCollection.Name)]
+public sealed class ReportQueriesTests(SqliteFixture fixture)
 {
     // Years no other test writes to, so totals are deterministic.
     private const int Year = 2041;
@@ -36,5 +36,21 @@ public sealed class ReportQueriesTests(SqlServerFixture fixture)
             new CategoryTotalRow("Insurance", 1, 250m, 0m),
             new CategoryTotalRow("Utilities", 1, 100m, 95.50m),
         ]);
+    }
+
+    [Fact]
+    public async Task GetMonthlySummaryAsync_FractionalAmounts_SumsExactly()
+    {
+        const int year = Year + 5;
+        var payee = new Payee($"Cents payee {Guid.NewGuid():N}", null, null);
+        await fixture.Get<IPayeeRepository>().AddAsync(payee, Ct);
+        var bills = fixture.Get<IBillRepository>();
+        await bills.AddAsync(new Bill("A", payee.Id, 1, 0.10m, new DateOnly(year, 5, 1), null), Ct);
+        await bills.AddAsync(new Bill("B", payee.Id, 1, 0.20m, new DateOnly(year, 5, 2), null), Ct);
+
+        var months = await fixture.Get<IReportQueries>().GetMonthlySummaryAsync(year, Ct);
+
+        months[4].TotalAmount.ShouldBe(0.30m);
+        months[4].OutstandingAmount.ShouldBe(0.30m);
     }
 }

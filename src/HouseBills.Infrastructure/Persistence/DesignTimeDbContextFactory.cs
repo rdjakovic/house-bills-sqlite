@@ -19,7 +19,7 @@ public sealed class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<App
             .Build();
 
         var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseSqlServer(DependencyInjection.GetRequiredConnectionString(configuration))
+            .UseSqlite(DependencyInjection.GetRequiredConnectionString(configuration))
             .Options;
         return new AppDbContext(options);
     }

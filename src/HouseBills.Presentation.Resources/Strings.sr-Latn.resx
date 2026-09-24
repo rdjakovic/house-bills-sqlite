@@ -380,4 +380,16 @@
   <data name="DatePicker_Watermark" xml:space="preserve">
     <value>Izaberite datum</value>
   </data>
+  <data name="Settings_Theme" xml:space="preserve">
+    <value>Tema</value>
+  </data>
+  <data name="Enum_AppTheme_System" xml:space="preserve">
+    <value>Kao u Windowsu</value>
+  </data>
+  <data name="Enum_AppTheme_Light" xml:space="preserve">
+    <value>Svetla</value>
+  </data>
+  <data name="Enum_AppTheme_Dark" xml:space="preserve">
+    <value>Tamna</value>
+  </data>
 </root>

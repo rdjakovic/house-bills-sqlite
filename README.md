@@ -2,7 +2,9 @@
 
 A Windows desktop app for keeping track of household bills: what's due, what's paid, what repeats every month, and where the money goes over the year.
 
-Built with .NET 10, WPF (Fluent theme) and SQL Server LocalDB. Everything stays on your own PC.
+Built with .NET 10, WPF (Fluent theme) and SQLite. Everything stays on your own PC, in a single data file.
+
+> This is the SQLite edition of [house-bills](https://github.com/rdjakovic/house-bills) (SQL Server LocalDB). Same app and features; the database is a local file instead of a database server, which makes the installer about a third of the size, needs no administrator rights and installs in seconds.
 
 ---
 
@@ -13,29 +15,26 @@ Built with .NET 10, WPF (Fluent theme) and SQL Server LocalDB. Everything stays 
 - **Payees and categories** — names are unique; anything still in use can't be deleted. Seven starter categories are created with the database.
 - **Reports** — monthly totals for a year compared with the previous year, and totals per category.
 - **English or Srpski** — choose the language under **Settings** (bottom of the menu); it switches immediately and is remembered. Serbian also uses Serbian formats (`1.234,56 RSD`, `24.9.2026.`); English follows your Windows regional settings.
-- **Safe for more than one person editing** — if someone else changed a record in the meantime, you get a "reload and try again" message instead of silently overwriting their change.
+- **Light or dark** — under **Settings**, choose *Same as Windows* (default), *Light* or *Dark*; it switches immediately and is remembered.
+- **No lost edits** — if a record was changed in the meantime (e.g. in a second HouseBills window), you get a "reload and try again" message instead of silently overwriting that change.
 
 ---
 
 ## Installing (for users)
 
-1. Run `HouseBills-Setup-<version>.exe` and follow the wizard. Administrator rights are needed.
+1. Run `HouseBills-Setup-<version>.exe` and follow the wizard. No administrator rights are needed: HouseBills is installed for your Windows user only (in `%LOCALAPPDATA%\Programs\HouseBills`).
 2. If Windows shows **"Windows protected your PC"**, click **More info → Run anyway**. The installer isn't code-signed yet. (Copying the installer via USB stick or a network share instead of downloading it avoids this prompt.)
-3. Start HouseBills from the Start menu. The first start takes up to ~20 seconds while it creates your database; a "Starting HouseBills…" window is shown meanwhile.
+3. Start HouseBills from the Start menu. It creates your data file on first start.
 
-The installer also installs what the app needs, only if it's missing:
-
-- **Microsoft SQL Server Express LocalDB** — the database engine HouseBills stores data in.
-- **Microsoft Visual C++ Redistributable** — required by LocalDB.
-
-On a PC without LocalDB, installation can take several minutes. No separate .NET installation is needed.
+Nothing else is installed: no .NET, no database server.
 
 **Your data**
 
-- Each Windows user on the PC has their own HouseBills data (LocalDB is per user). It lives in your user profile (`C:\Users\<you>\HouseBills.mdf`).
-- Uninstalling HouseBills keeps your data and LocalDB, so reinstalling brings your bills back.
+- Your bills are in one file: `%LOCALAPPDATA%\HouseBills\HouseBills.db`. Each Windows user on the PC has their own.
+- **Backup / moving to another PC:** close HouseBills, then copy that file (restore by copying it back to the same place). While the app is running — or if it didn't close normally — recent changes can also be in `HouseBills.db-wal` next to it; SQLite merges them back on the next start, so keep those files together.
+- Uninstalling HouseBills keeps your data, so reinstalling brings your bills back.
 - Log files are in `%LOCALAPPDATA%\HouseBills\Logs` (one file per day, kept for 30 days) — useful when something goes wrong.
-- Your language choice is stored in `%LOCALAPPDATA%\HouseBills\preferences.json`. Without it, HouseBills starts in Serbian if Windows' display language is Serbian, otherwise in English.
+- Your language and theme choices are stored in `%LOCALAPPDATA%\HouseBills\preferences.json`. Without it, HouseBills starts in Serbian if Windows' display language is Serbian, otherwise in English.
 
 ---
 
@@ -47,26 +46,24 @@ On a PC without LocalDB, installation can take several minutes. No separate .NET
 |---|---|---|
 | Windows 10 (1809+) or 11, x64 | everything (WPF) | — |
 | .NET SDK **10.0.401** or later 10.0.x (pinned in `global.json`) | build, run, test | `winget install Microsoft.DotNet.SDK.10` |
-| SQL Server **LocalDB** | running the app, LocalDB tests | SQL Server Express installer (LocalDB feature) or the HouseBills installer |
-| **Docker Desktop** (running) | integration tests against SQL Server in a container | `winget install Docker.DockerDesktop` |
 | **Inno Setup 6** | building the installer only | `winget install JRSoftware.InnoSetup` |
 
 ### Get started
 
 ```bash
-git clone https://github.com/rdjakovic/house-bills.git   # or: git clone git@github.com:rdjakovic/house-bills.git
-cd house-bills
+git clone https://github.com/rdjakovic/house-bills-sqlite.git   # or: git clone git@github.com:rdjakovic/house-bills-sqlite.git
+cd house-bills-sqlite
 dotnet tool restore
 dotnet build
 dotnet run --project src/HouseBills.Wpf
 ```
 
-On first start the app creates the `HouseBills` database in `(localdb)\MSSQLLocalDB` and applies all migrations. There is no manual database step when you use LocalDB.
+On first start the app creates `%LOCALAPPDATA%\HouseBills\HouseBills.db` (the folder too) and applies all migrations. There is no manual database step.
 
 To use a different database without editing files, override the connection string with an environment variable (it takes precedence over `appsettings.json`):
 
 ```powershell
-$env:ConnectionStrings__HouseBills = "Server=(localdb)\MSSQLLocalDB;Database=HouseBillsDev;Integrated Security=True;Encrypt=True;TrustServerCertificate=True"
+$env:ConnectionStrings__HouseBills = "Data Source=%LOCALAPPDATA%\HouseBills\HouseBillsDev.db"
 dotnet run --project src/HouseBills.Wpf
 ```
 
@@ -77,8 +74,7 @@ dotnet test
 ```
 
 - Tests use **xUnit v3** on **Microsoft.Testing.Platform** (enabled in `global.json`), with Shouldly and NSubstitute.
-- `HouseBills.Infrastructure.Tests` runs SQL Server in Docker via Testcontainers — **Docker Desktop must be running**, otherwise those tests fail with "Docker is either not running". The first run downloads the SQL Server image (~several minutes).
-- LocalDB tests (database creation and re-attach) skip themselves when LocalDB isn't installed.
+- `HouseBills.Infrastructure.Tests` run against real SQLite database files created in `%TEMP%\HouseBillsTests` with the app's own migrations (and deleted afterwards). Nothing to install or start.
 - Tests run with the `en-US` culture (`tests/xunit.runner.json`), so assertions on English texts don't depend on the Windows display language.
 - Run one project: `dotnet test --project tests/HouseBills.Domain.Tests`
 
@@ -100,8 +96,8 @@ dotnet ef database update       -p src/HouseBills.Infrastructure -s src/HouseBil
 dotnet ef migrations script --idempotent -p src/HouseBills.Infrastructure -s src/HouseBills.Wpf -o artifacts/migrate.sql
 ```
 
-- With **LocalDB**, the app applies pending migrations itself at startup (`LocalDbInitializer`), so `database update` is optional.
-- With **any other SQL Server** the app never changes the schema; deploy with the idempotent script. See `AGENTS.md` §6.
+- The app applies pending migrations itself at startup (`SqliteDatabaseInitializer`), so `database update` is optional. See `AGENTS.md` §6.
+- SQLite can't do every schema change in place (e.g. altering a column); EF Core then rebuilds the table in the migration. Review such migrations carefully.
 - Never edit a migration that has already been applied — add a new one.
 
 ### Build the installer
@@ -110,7 +106,7 @@ dotnet ef migrations script --idempotent -p src/HouseBills.Infrastructure -s src
 powershell -ExecutionPolicy Bypass -File installer\build-installer.ps1 -Version 1.0.0
 ```
 
-This publishes the app self-contained for win-x64, downloads the LocalDB and VC++ prerequisites once into `artifacts\prereqs` (signatures verified; the LocalDB download asks for administrator approval), and compiles `installer\HouseBills.iss`. Output: `artifacts\installer\HouseBills-Setup-1.0.0.exe` (~135 MB).
+This publishes the app self-contained for win-x64 and compiles `installer\HouseBills.iss`. Output: `artifacts\installer\HouseBills-Setup-1.0.0.exe` (~47 MB). SQLite's native library (`e_sqlite3.dll`) is part of the published app and has no other dependencies.
 
 Test installer changes on a **clean** Windows (e.g. Windows Sandbox), not only on your dev PC — the dev PC already has runtimes the target PC may not.
 
@@ -118,11 +114,11 @@ Test installer changes on a **clean** Windows (e.g. Windows Sandbox), not only o
 
 | Setting | Default | Meaning |
 |---|---|---|
-| `ConnectionStrings:HouseBills` | LocalDB, database `HouseBills` | Database connection. |
+| `ConnectionStrings:HouseBills` | `Data Source=%LOCALAPPDATA%\HouseBills\HouseBills.db` | SQLite database file; environment variables are expanded. |
 | `Billing:GenerationLookaheadDays` | `31` | How far ahead recurring bills are generated (0–366). |
 | `FileLogging:Directory` | `%LOCALAPPDATA%\HouseBills\Logs` | Log folder; environment variables are expanded. |
 | `FileLogging:RetainedDays` | `30` | Log files older than this are deleted (1–3650). |
-| `UserPreferences:FilePath` | `%LOCALAPPDATA%\HouseBills\preferences.json` | Where the language choice is saved (not in `appsettings.json` by default; handy to override in tests). |
+| `UserPreferences:FilePath` | `%LOCALAPPDATA%\HouseBills\preferences.json` | Where the language and theme choices are saved (not in `appsettings.json` by default; handy to override in tests). |
 | `Logging:LogLevel` | `Information` | Standard .NET log levels; apply to the log file too. |
 
 Every setting can be overridden with an environment variable, using `__` for `:` (e.g. `Billing__GenerationLookaheadDays=60`).
@@ -133,10 +129,10 @@ Every setting can be overridden with an environment variable, using `__` for `:`
 src/
   HouseBills.Domain/          Entities and business rules (bills, recurring schedules, money rules). No dependencies.
   HouseBills.Application/     Services, validation, Result types, repository and report interfaces.
-  HouseBills.Infrastructure/  EF Core DbContext, configurations, migrations, repositories, Dapper reports, LocalDB setup.
+  HouseBills.Infrastructure/  EF Core DbContext, configurations, migrations, repositories, Dapper reports, database setup.
   HouseBills.Presentation.Resources/  UI texts (Strings.resx + Strings.sr-Latn.resx); no UI-framework dependency.
   HouseBills.Wpf/             WPF views, view models (CommunityToolkit.Mvvm), navigation, dialogs, app host, logging, localization.
-tests/                        One test project per layer; Infrastructure tests use real SQL Server.
+tests/                        One test project per layer; Infrastructure tests use real SQLite files.
 installer/                    Inno Setup script and build script.
 tools/generate-icon.ps1       Regenerates src/HouseBills.Wpf/Assets/HouseBills.ico.
 ```
@@ -159,7 +155,7 @@ All user-facing text is in resource files, English plus a Serbian (Latin) transl
 
 ### Tech stack
 
-.NET 10 · WPF with the Fluent theme · CommunityToolkit.Mvvm · Generic Host (DI, config, logging) · EF Core 10 (SQL Server) · Dapper · Serilog (daily log files) · xUnit v3, Shouldly, NSubstitute, Testcontainers · Inno Setup.
+.NET 10 · WPF with the Fluent theme · CommunityToolkit.Mvvm · Generic Host (DI, config, logging) · EF Core 10 (SQLite) · Dapper · Serilog (daily log files) · xUnit v3, Shouldly, NSubstitute · Inno Setup.
 
 Package versions are pinned centrally in `Directory.Packages.props`. Coding conventions and rules for contributors (and AI agents) are in [`AGENTS.md`](AGENTS.md).
 
@@ -169,8 +165,5 @@ Package versions are pinned centrally in `Directory.Packages.props`. Coding conv
 
 | Problem | What to do |
 |---|---|
-| "Could not load bills…" on start | Check the latest file in `%LOCALAPPDATA%\HouseBills\Logs`. Usually LocalDB isn't installed or the connection string is wrong. |
-| `Cannot open database "HouseBills"` although `HouseBills.mdf` exists in your profile | LocalDB lost track of the database. Just start the app — it re-attaches the existing files automatically, keeping your data. |
-| `dotnet ef database update` fails with "Cannot create file … already exists" | Same cause as above: start the app once (it re-attaches the database), then run the command again. |
-| Infrastructure tests fail with "Docker is either not running" | Start Docker Desktop and wait until `docker info` responds. |
-| Installer fails installing LocalDB | The error message names a log file in `%TEMP%` (`HouseBills-LocalDB-install.log` / `HouseBills-VCRedist-install.log`); search it for `Return value 3`. |
+| "Could not load bills…" on start | Check the latest file in `%LOCALAPPDATA%\HouseBills\Logs`. Usually the data folder isn't writable or the connection string is wrong. |
+| `database is locked` in the log | Another program (a second HouseBills, a backup tool or a DB browser) has the file open for writing. Close it and try again. |

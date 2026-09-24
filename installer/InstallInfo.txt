@@ -1,12 +1,9 @@
 HouseBills keeps track of your household bills.
 
 WHAT THIS SETUP INSTALLS
-- The HouseBills application (no separate .NET installation is needed).
-- Microsoft SQL Server Express LocalDB, if it is not already installed. HouseBills uses it to store your data on this PC.
-- The Microsoft Visual C++ Redistributable, which LocalDB needs (only if LocalDB has to be installed).
-
-By continuing, you accept the license terms of Microsoft SQL Server Express LocalDB and the Microsoft Visual C++ Redistributable (https://www.microsoft.com/useterms).
+- The HouseBills application, for your Windows user only. Nothing else is needed: no separate .NET or database installation, and no administrator rights.
 
 YOUR DATA
-- Each Windows user on this PC gets their own HouseBills data, created automatically the first time they start the app.
-- Uninstalling HouseBills keeps your data and LocalDB, so reinstalling brings your bills back.
+- Your bills are stored in a single file on this PC: %LOCALAPPDATA%\HouseBills\HouseBills.db. It is created automatically the first time you start the app.
+- To back up your data or move it to another PC, copy that file while HouseBills is closed.
+- Uninstalling HouseBills keeps your data, so reinstalling brings your bills back.

@@ -33,10 +33,19 @@ public sealed class JsonUserPreferencesStoreTests : IDisposable
     {
         var store = CreateStore();
 
-        await store.SaveAsync(new UserPreferences("sr-Latn-RS"), Ct);
+        await store.SaveAsync(new UserPreferences("sr-Latn-RS", "Dark"), Ct);
 
         File.Exists(FilePath).ShouldBeTrue();
-        (await CreateStore().LoadAsync(Ct)).ShouldBe(new UserPreferences("sr-Latn-RS"));
+        (await CreateStore().LoadAsync(Ct)).ShouldBe(new UserPreferences("sr-Latn-RS", "Dark"));
+    }
+
+    [Fact]
+    public async Task LoadAsync_FileFromBeforeThemeSetting_KeepsLanguageAndDefaultsTheme()
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
+        await File.WriteAllTextAsync(FilePath, """{ "Language": "sr-Latn-RS" }""", Ct);
+
+        (await CreateStore().LoadAsync(Ct)).ShouldBe(new UserPreferences("sr-Latn-RS", null));
     }
 
     [Fact]

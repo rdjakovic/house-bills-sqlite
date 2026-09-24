@@ -5,8 +5,8 @@ using HouseBills.Domain;
 
 namespace HouseBills.Infrastructure.Tests;
 
-[Collection(SqlServerCollection.Name)]
-public sealed class RecurringBillGenerationTests(SqlServerFixture fixture)
+[Collection(SqliteCollection.Name)]
+public sealed class RecurringBillGenerationTests(SqliteFixture fixture)
 {
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
@@ -15,7 +15,7 @@ public sealed class RecurringBillGenerationTests(SqlServerFixture fixture)
     {
         var payeeId = (await fixture.Get<IPayeeService>().SaveAsync(new SavePayeeRequest(null, $"Landlord {Guid.NewGuid():N}", null, null, null), Ct)).Value;
         var recurring = fixture.Get<IRecurringBillService>();
-        var start = SqlServerFixture.Today.AddMonths(-2);
+        var start = SqliteFixture.Today.AddMonths(-2);
         var saved = await recurring.SaveAsync(
             new SaveRecurringBillRequest(null, "Rent", payeeId, 2, 950m, BillFrequency.Monthly, start, null, null, null),
             Ct);
@@ -29,7 +29,7 @@ public sealed class RecurringBillGenerationTests(SqlServerFixture fixture)
         // Lookahead is 31 days (through 2026-10-25): start, +1 month, +2 months (= today) and +3 months.
         bills.Select(b => b.DueDate).ShouldBe([start, start.AddMonths(1), start.AddMonths(2), start.AddMonths(3)]);
         bills.ShouldAllBe(b => b.RecurringBillId == saved.Value && b.Amount == 950m);
-        (await recurring.ListAsync(Ct)).Single(r => r.Id == saved.Value).GeneratedThrough.ShouldBe(SqlServerFixture.Today.AddDays(31));
+        (await recurring.ListAsync(Ct)).Single(r => r.Id == saved.Value).GeneratedThrough.ShouldBe(SqliteFixture.Today.AddDays(31));
     }
 
     [Fact]
@@ -38,7 +38,7 @@ public sealed class RecurringBillGenerationTests(SqlServerFixture fixture)
         var payeeId = (await fixture.Get<IPayeeService>().SaveAsync(new SavePayeeRequest(null, $"ISP {Guid.NewGuid():N}", null, null, null), Ct)).Value;
         var recurring = fixture.Get<IRecurringBillService>();
         var id = (await recurring.SaveAsync(
-            new SaveRecurringBillRequest(null, "Internet", payeeId, 3, 30m, BillFrequency.Monthly, SqlServerFixture.Today, null, null, null),
+            new SaveRecurringBillRequest(null, "Internet", payeeId, 3, 30m, BillFrequency.Monthly, SqliteFixture.Today, null, null, null),
             Ct)).Value;
         await recurring.GenerateUpcomingBillsAsync(Ct);
         var template = (await recurring.ListAsync(Ct)).Single(r => r.Id == id);

@@ -11,8 +11,8 @@ internal sealed class PayeeConfiguration : IEntityTypeConfiguration<Payee>
     {
         builder.ToTable("Payees");
         builder.HasKey(p => p.Id);
-        builder.Property(p => p.RowVersion).IsRowVersion();
-        builder.Property(p => p.Name).HasMaxLength(Payee.NameMaxLength).IsRequired();
+        builder.HasAppRowVersion();
+        builder.Property(p => p.Name).HasMaxLength(Payee.NameMaxLength).IsRequired().UseCollation("NOCASE");
         builder.Property(p => p.AccountReference).HasMaxLength(Payee.AccountReferenceMaxLength);
         builder.Property(p => p.Notes).HasMaxLength(Payee.NotesMaxLength);
         builder.HasIndex(p => p.Name).IsUnique();
