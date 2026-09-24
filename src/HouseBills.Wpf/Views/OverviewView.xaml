@@ -6,7 +6,6 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:HouseBills.Wpf.ViewModels"
-             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=vm:OverviewViewModel}"
              d:DesignWidth="1000"
@@ -75,93 +74,60 @@
             </Border>
         </WrapPanel>
 
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="3*" />
-                <ColumnDefinition Width="2*" />
-            </Grid.ColumnDefinitions>
-
-            <DockPanel Grid.Column="0" Margin="0,0,16,0">
-                <DockPanel DockPanel.Dock="Top" LastChildFill="False">
-                    <TextBlock DockPanel.Dock="Left" Text="{loc:Tr Overview_NextBills}" Style="{StaticResource SectionTitleStyle}" />
-                    <Button DockPanel.Dock="Right" Content="{loc:Tr Overview_AllUnpaid}" Command="{Binding ShowUnpaidCommand}" Style="{StaticResource ToolbarButtonStyle}" VerticalAlignment="Top" />
-                </DockPanel>
-                <Grid>
-                    <DataGrid ItemsSource="{Binding NextBills}"
-                              Style="{StaticResource ListGridStyle}"
-                              b:ListGrid.OpenCommand="{Binding ShowUnpaidCommand}"
-                              Visibility="{Binding HasNextBills, Converter={StaticResource BoolToVisibility}}">
-                        <DataGrid.Columns>
-                            <DataGridTemplateColumn Header="{loc:Tr Field_Status}" SortMemberPath="Status">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding Status, Converter={StaticResource EnumText}}" Style="{StaticResource StatusTextStyle}" />
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
-                            <DataGridTextColumn Header="{loc:Tr Column_Due}" Binding="{Binding DueDate, StringFormat=d}" SortMemberPath="DueDate" />
-                            <DataGridTextColumn Header="{loc:Tr Field_Description}" Binding="{Binding Description}" Width="*" />
-                            <DataGridTextColumn Header="{loc:Tr Field_Payee}" Binding="{Binding PayeeName}" />
-                            <DataGridTextColumn Header="{loc:Tr Field_Amount}" SortMemberPath="Amount">
-                                <DataGridTextColumn.Binding>
-                                    <MultiBinding Converter="{StaticResource EstimatedMoney}">
-                                        <Binding Path="Amount" />
-                                        <Binding Path="IsEstimated" />
-                                    </MultiBinding>
-                                </DataGridTextColumn.Binding>
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsEstimated}" Value="True">
-                                                <Setter Property="FontStyle" Value="Italic" />
-                                                <Setter Property="ToolTip" Value="{loc:Tr Bills_EstimatedTooltip}" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
-                        </DataGrid.Columns>
-                    </DataGrid>
-                    <TextBlock Text="{loc:Tr Overview_NothingToPay}">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyNoteStyle}">
-                                <Setter Property="Visibility" Value="Collapsed" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HasNextBills}" Value="False">
-                                        <Setter Property="Visibility" Value="Visible" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
-                </Grid>
+        <DockPanel>
+            <DockPanel DockPanel.Dock="Top" LastChildFill="False">
+                <TextBlock DockPanel.Dock="Left" Text="{loc:Tr Overview_NextBills}" Style="{StaticResource SectionTitleStyle}" />
+                <Button DockPanel.Dock="Right" Content="{loc:Tr Overview_AllUnpaid}" Command="{Binding ShowUnpaidCommand}" Style="{StaticResource ToolbarButtonStyle}" VerticalAlignment="Top" />
             </DockPanel>
-
-            <DockPanel Grid.Column="1">
-                <TextBlock DockPanel.Dock="Top" Text="{loc:Tr Overview_LastTwelveMonths}" Style="{StaticResource SectionTitleStyle}" />
-                <Grid MinHeight="200">
-                    <lvc:CartesianChart Series="{Binding HistorySeries}"
-                                        XAxes="{Binding HistoryXAxes}"
-                                        YAxes="{Binding HistoryYAxes}"
-                                        TooltipTextPaint="{Binding ChartTextPaint}"
-                                        TooltipBackgroundPaint="{Binding TooltipBackgroundPaint}"
-                                        ZoomMode="None"
-                                        Background="Transparent"
-                                        Visibility="{Binding HasHistory, Converter={StaticResource BoolToVisibility}}" />
-                    <TextBlock Text="{loc:Tr Overview_NoHistory}">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyNoteStyle}">
-                                <Setter Property="Visibility" Value="Collapsed" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HasHistory}" Value="False">
-                                        <Setter Property="Visibility" Value="Visible" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
-                </Grid>
-            </DockPanel>
-        </Grid>
+            <Grid>
+                <DataGrid ItemsSource="{Binding NextBills}"
+                          Style="{StaticResource ListGridStyle}"
+                          b:ListGrid.OpenCommand="{Binding ShowUnpaidCommand}"
+                          Visibility="{Binding HasNextBills, Converter={StaticResource BoolToVisibility}}">
+                    <DataGrid.Columns>
+                        <DataGridTemplateColumn Header="{loc:Tr Field_Status}" SortMemberPath="Status">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Status, Converter={StaticResource EnumText}}" Style="{StaticResource StatusTextStyle}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="{loc:Tr Column_Due}" Binding="{Binding DueDate, StringFormat=d}" SortMemberPath="DueDate" />
+                        <DataGridTextColumn Header="{loc:Tr Field_Description}" Binding="{Binding Description}" Width="*" />
+                        <DataGridTextColumn Header="{loc:Tr Field_Payee}" Binding="{Binding PayeeName}" />
+                        <DataGridTextColumn Header="{loc:Tr Field_Amount}" SortMemberPath="Amount">
+                            <DataGridTextColumn.Binding>
+                                <MultiBinding Converter="{StaticResource EstimatedMoney}">
+                                    <Binding Path="Amount" />
+                                    <Binding Path="IsEstimated" />
+                                </MultiBinding>
+                            </DataGridTextColumn.Binding>
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsEstimated}" Value="True">
+                                            <Setter Property="FontStyle" Value="Italic" />
+                                            <Setter Property="ToolTip" Value="{loc:Tr Bills_EstimatedTooltip}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+                <TextBlock Text="{loc:Tr Overview_NothingToPay}">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyNoteStyle}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasNextBills}" Value="False">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </Grid>
+        </DockPanel>
     </DockPanel>
 </UserControl>

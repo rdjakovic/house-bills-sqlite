@@ -1,12 +1,11 @@
 using HouseBills.Application.Bills;
 using HouseBills.Application.Common;
 using HouseBills.Application.Persistence;
-using HouseBills.Application.Reports;
 using HouseBills.Domain;
 
 namespace HouseBills.Application.Overview;
 
-internal sealed class OverviewService(IBillRepository bills, IReportQueries reports, IClock clock) : IOverviewService
+internal sealed class OverviewService(IBillRepository bills, IClock clock) : IOverviewService
 {
     public async Task<OverviewSummary> GetSummaryAsync(int nextBillsCount, CancellationToken cancellationToken)
     {
@@ -31,26 +30,6 @@ internal sealed class OverviewService(IBillRepository bills, IReportQueries repo
             thisMonth.Sum(b => b.Amount),
             thisMonth.Where(b => b.PaidOn is not null).Sum(b => b.PaidAmount ?? 0m),
             lastMonth.Sum(b => b.Amount),
-            unpaid.Take(nextBillsCount).ToList(),
-            await GetLastTwelveMonthsAsync(today, cancellationToken));
-    }
-
-    /// <summary>
-    /// The monthly summary of this year already carries the same months of last year, so one query covers the last 12
-    /// months: this year's months up to now, then last year's remaining months.
-    /// </summary>
-    private async Task<IReadOnlyList<MonthTotal>> GetLastTwelveMonthsAsync(DateOnly today, CancellationToken cancellationToken)
-    {
-        var months = (await reports.GetMonthlySummaryAsync(today.Year, cancellationToken)).ToDictionary(m => m.Month);
-        var start = new DateOnly(today.Year, today.Month, 1).AddMonths(-11);
-        return Enumerable.Range(0, 12)
-            .Select(offset => start.AddMonths(offset))
-            .Select(month => new MonthTotal(
-                month.Year,
-                month.Month,
-                months.TryGetValue(month.Month, out var row)
-                    ? month.Year == today.Year ? row.TotalAmount : row.PreviousYearTotalAmount
-                    : 0m))
-            .ToList();
+            unpaid.Take(nextBillsCount).ToList());
     }
 }

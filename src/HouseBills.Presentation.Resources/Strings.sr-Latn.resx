@@ -278,6 +278,12 @@
   <data name="Reports_ByCategory" xml:space="preserve">
     <value>Po kategorijama</value>
   </data>
+  <data name="Reports_RecurringBill" xml:space="preserve">
+    <value>Ponavljajući račun</value>
+  </data>
+  <data name="Reports_AllBills" xml:space="preserve">
+    <value>Svi računi</value>
+  </data>
   <data name="Reports_LoadFailed" xml:space="preserve">
     <value>Učitavanje izveštaja nije uspelo.</value>
   </data>
@@ -468,12 +474,6 @@ Trenutni podaci se prvo čuvaju kao sigurnosna kopija u fascikli rezervnih kopij
   </data>
   <data name="Overview_AllUnpaid" xml:space="preserve">
     <value>Svi neplaćeni računi</value>
-  </data>
-  <data name="Overview_LastTwelveMonths" xml:space="preserve">
-    <value>Poslednjih 12 meseci</value>
-  </data>
-  <data name="Overview_NoHistory" xml:space="preserve">
-    <value>Nema računa u poslednjih 12 meseci.</value>
   </data>
   <data name="Overview_LoadFailed" xml:space="preserve">
     <value>Pregled nije mogao da se učita.</value>

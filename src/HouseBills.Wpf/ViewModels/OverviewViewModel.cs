@@ -13,10 +13,6 @@ using HouseBills.Wpf.Charts;
 using HouseBills.Wpf.Localization;
 using HouseBills.Wpf.Services;
 
-using LiveChartsCore;
-using LiveChartsCore.SkiaSharpView;
-using LiveChartsCore.SkiaSharpView.Painting;
-
 using Microsoft.Extensions.Logging;
 
 namespace HouseBills.Wpf.ViewModels;
@@ -30,7 +26,6 @@ public sealed partial class OverviewViewModel : PageViewModel
     private readonly IRecurringBillService _recurringBills;
     private readonly INavigationService _navigation;
     private readonly IClock _clock;
-    private readonly IChartColors _chartColors;
     private bool _hasGeneratedBills;
 
     public OverviewViewModel(
@@ -38,7 +33,6 @@ public sealed partial class OverviewViewModel : PageViewModel
         IRecurringBillService recurringBills,
         INavigationService navigation,
         IClock clock,
-        IChartColors chartColors,
         IDialogService dialogs,
         ILogger<OverviewViewModel> logger)
         : base(dialogs, logger)
@@ -47,7 +41,6 @@ public sealed partial class OverviewViewModel : PageViewModel
         _recurringBills = recurringBills;
         _navigation = navigation;
         _clock = clock;
-        _chartColors = chartColors;
     }
 
     public override string Title => Strings.Page_Overview;
@@ -83,24 +76,6 @@ public sealed partial class OverviewViewModel : PageViewModel
 
     [ObservableProperty]
     public partial bool HasNextBills { get; set; }
-
-    [ObservableProperty]
-    public partial ISeries[] HistorySeries { get; set; } = [];
-
-    [ObservableProperty]
-    public partial Axis[] HistoryXAxes { get; set; } = [];
-
-    [ObservableProperty]
-    public partial Axis[] HistoryYAxes { get; set; } = [];
-
-    [ObservableProperty]
-    public partial SolidColorPaint? ChartTextPaint { get; set; }
-
-    [ObservableProperty]
-    public partial SolidColorPaint? TooltipBackgroundPaint { get; set; }
-
-    [ObservableProperty]
-    public partial bool HasHistory { get; set; }
 
     public override Task OnNavigatedToAsync()
     {
@@ -156,7 +131,6 @@ public sealed partial class OverviewViewModel : PageViewModel
         }
 
         HasNextBills = NextBills.Count > 0;
-        BuildHistoryChart(summary.LastTwelveMonths);
     }
 
     /// <summary>"+12%" / "-5 %": signed, in the language's own percent format.</summary>
@@ -164,31 +138,5 @@ public sealed partial class OverviewViewModel : PageViewModel
     {
         var percent = change.ToString("P0", LocalizedStrings.FormattingCulture);
         return change > 0m ? "+" + percent : percent;
-    }
-
-    /// <summary>Rebuilt on every load, so colors (theme), month names (language) and money formats are current.</summary>
-    private void BuildHistoryChart(IReadOnlyList<MonthTotal> months)
-    {
-        var text = new SolidColorPaint(_chartColors.Text);
-        ChartTextPaint = text;
-        TooltipBackgroundPaint = new SolidColorPaint(_chartColors.TooltipBackground);
-        HasHistory = months.Any(m => m.TotalAmount != 0m);
-
-        var culture = LocalizedStrings.Culture;
-        HistoryXAxes = [MoneyCharts.MonthAxis(months.Select(m => m.Month), text)];
-        HistoryYAxes = [MoneyCharts.AmountAxis(text, _chartColors.Gridlines)];
-        HistorySeries =
-        [
-            MoneyCharts.Columns(
-                Strings.Overview_LastTwelveMonths,
-                months.Select(m => m.TotalAmount),
-                ChartPalette.At(0),
-                point =>
-                {
-                    var month = months[point.Index];
-                    var name = MoneyCharts.Capitalize(culture.DateTimeFormat.GetMonthName(month.Month), culture);
-                    return $"{name} {month.Year}: {MoneyCharts.Format(month.TotalAmount)}";
-                }),
-        ];
     }
 }

@@ -11,7 +11,8 @@ internal sealed class ReportQueries(ISqlConnectionFactory connectionFactory) : I
 {
     // Dates are stored as 'yyyy-MM-dd' text, so the range predicates compare as text, stay SARGable and use
     // IX_Bills_DueDate; strftime() is only applied to the filtered rows. Amounts are INTEGER minor units, so the sums
-    // are exact.
+    // are exact. The optional recurring bill filter is checked on the rows already narrowed by date, so it needs no index
+    // of its own.
     private const string MonthlySummarySql = """
         WITH RECURSIVE Months(Month) AS (
             SELECT 1 UNION ALL SELECT Month + 1 FROM Months WHERE Month < 12
@@ -25,6 +26,7 @@ internal sealed class ReportQueries(ISqlConnectionFactory connectionFactory) : I
                    SUM(CASE WHEN b.PaidOn IS NULL THEN b.Amount ELSE 0 END) AS OutstandingAmount
             FROM Bills AS b
             WHERE b.DueDate >= @PreviousYearStart AND b.DueDate < @NextYearStart
+              AND (@RecurringBillId IS NULL OR b.RecurringBillId = @RecurringBillId)
             GROUP BY 1, 2
         )
         SELECT m.Month,
@@ -47,11 +49,12 @@ internal sealed class ReportQueries(ISqlConnectionFactory connectionFactory) : I
         FROM Bills AS b
         INNER JOIN Categories AS c ON c.Id = b.CategoryId
         WHERE b.DueDate >= @From AND b.DueDate <= @To
+          AND (@RecurringBillId IS NULL OR b.RecurringBillId = @RecurringBillId)
         GROUP BY c.Id, c.Name
         ORDER BY TotalAmount DESC, c.Name;
         """;
 
-    public async Task<IReadOnlyList<MonthlySummaryRow>> GetMonthlySummaryAsync(int year, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<MonthlySummaryRow>> GetMonthlySummaryAsync(int year, int? recurringBillId, CancellationToken cancellationToken)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(year, DateOnly.MinValue.Year + 1);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(year, DateOnly.MaxValue.Year - 1);
@@ -61,6 +64,7 @@ internal sealed class ReportQueries(ISqlConnectionFactory connectionFactory) : I
             Year = year,
             PreviousYearStart = ToStoredDate(new DateOnly(year - 1, 1, 1)),
             NextYearStart = ToStoredDate(new DateOnly(year + 1, 1, 1)),
+            RecurringBillId = recurringBillId,
         };
 
         await using var connection = connectionFactory.Create();
@@ -77,9 +81,9 @@ internal sealed class ReportQueries(ISqlConnectionFactory connectionFactory) : I
             .ToList();
     }
 
-    public async Task<IReadOnlyList<CategoryTotalRow>> GetCategoryTotalsAsync(DateOnly from, DateOnly to, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<CategoryTotalRow>> GetCategoryTotalsAsync(DateOnly from, DateOnly to, int? recurringBillId, CancellationToken cancellationToken)
     {
-        var parameters = new { From = ToStoredDate(from), To = ToStoredDate(to) };
+        var parameters = new { From = ToStoredDate(from), To = ToStoredDate(to), RecurringBillId = recurringBillId };
 
         await using var connection = connectionFactory.Create();
         var rows = await connection.QueryAsync<CategoryTotals>(

@@ -1,6 +1,7 @@
 using System.Globalization;
 
 using HouseBills.Application.Common;
+using HouseBills.Application.RecurringBills;
 using HouseBills.Application.Reports;
 using HouseBills.Wpf.Charts;
 using HouseBills.Wpf.Services;
@@ -26,10 +27,12 @@ public sealed class SerbianReportsTests : IDisposable
         var clock = Substitute.For<IClock>();
         clock.Today.Returns(new DateOnly(2026, 9, 24));
         var reports = Substitute.For<IReportQueries>();
-        reports.GetMonthlySummaryAsync(2026, Arg.Any<CancellationToken>())
+        reports.GetMonthlySummaryAsync(2026, null, Arg.Any<CancellationToken>())
             .Returns(Enumerable.Range(1, 12).Select(m => new MonthlySummaryRow(m, 0, 0m, 0m, 0m, 0m)).ToList());
-        reports.GetCategoryTotalsAsync(Arg.Any<DateOnly>(), Arg.Any<DateOnly>(), Arg.Any<CancellationToken>()).Returns([]);
-        var viewModel = new ReportsViewModel(reports, clock, Substitute.For<IChartColors>(), Substitute.For<IFileSaver>(), Substitute.For<IDialogService>(), NullLogger<ReportsViewModel>.Instance);
+        reports.GetCategoryTotalsAsync(Arg.Any<DateOnly>(), Arg.Any<DateOnly>(), Arg.Any<int?>(), Arg.Any<CancellationToken>()).Returns([]);
+        var recurringBills = Substitute.For<IRecurringBillService>();
+        recurringBills.ListAsync(Arg.Any<CancellationToken>()).Returns([]);
+        var viewModel = new ReportsViewModel(reports, recurringBills, clock, Substitute.For<IChartColors>(), Substitute.For<IFileSaver>(), Substitute.For<IDialogService>(), NullLogger<ReportsViewModel>.Instance);
 
         await viewModel.OnNavigatedToAsync();
 
@@ -37,5 +40,6 @@ public sealed class SerbianReportsTests : IDisposable
         viewModel.Months[11].MonthName.ShouldBe("Decembar");
         viewModel.MonthXAxes[0].Labels![0].ShouldStartWith("Jan");
         viewModel.Title.ShouldBe("Izveštaji");
+        viewModel.SelectedRecurringBill!.Name.ShouldBe("Svi računi");
     }
 }

@@ -278,6 +278,12 @@
   <data name="Reports_ByCategory" xml:space="preserve">
     <value>By category</value>
   </data>
+  <data name="Reports_RecurringBill" xml:space="preserve">
+    <value>Recurring bill</value>
+  </data>
+  <data name="Reports_AllBills" xml:space="preserve">
+    <value>All bills</value>
+  </data>
   <data name="Reports_LoadFailed" xml:space="preserve">
     <value>Could not load reports.</value>
   </data>
@@ -468,12 +474,6 @@ Your current data is first saved as a safety copy in the backup folder.</value>
   </data>
   <data name="Overview_AllUnpaid" xml:space="preserve">
     <value>All unpaid bills</value>
-  </data>
-  <data name="Overview_LastTwelveMonths" xml:space="preserve">
-    <value>Last 12 months</value>
-  </data>
-  <data name="Overview_NoHistory" xml:space="preserve">
-    <value>No bills in the last 12 months.</value>
   </data>
   <data name="Overview_LoadFailed" xml:space="preserve">
     <value>Could not load the overview.</value>

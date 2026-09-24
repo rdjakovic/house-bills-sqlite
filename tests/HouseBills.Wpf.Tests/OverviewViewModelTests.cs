@@ -5,7 +5,6 @@ using HouseBills.Application.Overview;
 using HouseBills.Application.Payees;
 using HouseBills.Application.RecurringBills;
 using HouseBills.Domain;
-using HouseBills.Wpf.Charts;
 using HouseBills.Wpf.Services;
 using HouseBills.Wpf.ViewModels;
 
@@ -29,7 +28,7 @@ public sealed class OverviewViewModelTests
     {
         _clock.Today.Returns(Today);
         _overview.GetSummaryAsync(Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns(Summary(lastMonthTotal: 400m));
-        _viewModel = new OverviewViewModel(_overview, _recurring, _navigation, _clock, Substitute.For<IChartColors>(), Substitute.For<IDialogService>(), NullLogger<OverviewViewModel>.Instance);
+        _viewModel = new OverviewViewModel(_overview, _recurring, _navigation, _clock, Substitute.For<IDialogService>(), NullLogger<OverviewViewModel>.Instance);
     }
 
     [Fact]
@@ -47,9 +46,6 @@ public sealed class OverviewViewModelTests
         _viewModel.ThisMonthTotal.ShouldBe(500m);
         _viewModel.ChangeVsLastMonthText.ShouldBe("+25% compared with last month");
         _viewModel.NextBills.Count.ShouldBe(2);
-        _viewModel.HasHistory.ShouldBeTrue();
-        _viewModel.HistorySeries.ShouldHaveSingleItem();
-        _viewModel.HistoryXAxes.ShouldHaveSingleItem().Labels!.Count.ShouldBe(12);
     }
 
     [Fact]
@@ -100,8 +96,7 @@ public sealed class OverviewViewModelTests
         [
             new BillListItem(1, "Power", 1, "EPS", 1, "Utilities", 100m, Today.AddDays(-3), null, null, null, null, [1]) { Status = BillStatus.Overdue },
             new BillListItem(2, "Water", 1, "Infostan", 1, "Utilities", 50m, Today.AddDays(2), null, null, null, null, [1]) { Status = BillStatus.DueSoon },
-        ],
-        LastTwelveMonths: Enumerable.Range(0, 12).Select(i => new MonthTotal(i < 3 ? 2025 : 2026, (i + 9) % 12 + 1, 100m + i)).ToList());
+        ]);
 
     private BillsViewModel CreateBillsViewModel() => new(
         Substitute.For<IBillService>(),

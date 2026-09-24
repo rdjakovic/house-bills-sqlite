@@ -79,6 +79,6 @@ public sealed class ReminderServiceTests
     private void GivenSummary(int overdue, int dueSoon)
     {
         _overview.GetSummaryAsync(Arg.Any<int>(), Arg.Any<CancellationToken>())
-            .Returns(new OverviewSummary(overdue, overdue * 100m, dueSoon, dueSoon * 10m, 0m, 0m, 0m, [], []));
+            .Returns(new OverviewSummary(overdue, overdue * 100m, dueSoon, dueSoon * 10m, 0m, 0m, 0m, []));
     }
 }

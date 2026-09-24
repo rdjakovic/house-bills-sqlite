@@ -1,4 +1,6 @@
+using HouseBills.Application.Payees;
 using HouseBills.Application.Persistence;
+using HouseBills.Application.RecurringBills;
 using HouseBills.Application.Reports;
 using HouseBills.Domain;
 
@@ -26,8 +28,8 @@ public sealed class ReportQueriesTests(SqliteFixture fixture)
         await bills.AddAsync(new Bill("Outside range", payee.Id, 1, 999m, new DateOnly(Year + 1, 1, 1), null), Ct);
         var reports = fixture.Get<IReportQueries>();
 
-        var months = await reports.GetMonthlySummaryAsync(Year, Ct);
-        var categories = await reports.GetCategoryTotalsAsync(new DateOnly(Year, 1, 1), new DateOnly(Year, 12, 31), Ct);
+        var months = await reports.GetMonthlySummaryAsync(Year, null, Ct);
+        var categories = await reports.GetCategoryTotalsAsync(new DateOnly(Year, 1, 1), new DateOnly(Year, 12, 31), null, Ct);
 
         months.Count.ShouldBe(12);
         months[2].ShouldBe(new MonthlySummaryRow(3, 2, 350m, 95.50m, 250m, 80m));
@@ -48,9 +50,32 @@ public sealed class ReportQueriesTests(SqliteFixture fixture)
         await bills.AddAsync(new Bill("A", payee.Id, 1, 0.10m, new DateOnly(year, 5, 1), null), Ct);
         await bills.AddAsync(new Bill("B", payee.Id, 1, 0.20m, new DateOnly(year, 5, 2), null), Ct);
 
-        var months = await fixture.Get<IReportQueries>().GetMonthlySummaryAsync(year, Ct);
+        var months = await fixture.Get<IReportQueries>().GetMonthlySummaryAsync(year, null, Ct);
 
         months[4].TotalAmount.ShouldBe(0.30m);
         months[4].OutstandingAmount.ShouldBe(0.30m);
+    }
+
+    [Fact]
+    public async Task Reports_RecurringBillGiven_CountOnlyBillsGeneratedFromIt()
+    {
+        // A past year no other test writes to: the template generates all 12 months of it at once.
+        const int year = 2016;
+        var payeeId = (await fixture.Get<IPayeeService>().SaveAsync(new SavePayeeRequest(null, $"Landlord {Guid.NewGuid():N}", null, null, null), Ct)).Value;
+        var recurring = fixture.Get<IRecurringBillService>();
+        var rentId = (await recurring.SaveAsync(
+            new SaveRecurringBillRequest(null, "Rent", payeeId, 2, 500m, BillFrequency.Monthly, new DateOnly(year, 1, 5), new DateOnly(year, 12, 31), null, null),
+            Ct)).Value;
+        await recurring.GenerateUpcomingBillsAsync(Ct);
+        await fixture.Get<IBillRepository>().AddAsync(new Bill("One-off repair", payeeId, 2, 120m, new DateOnly(year, 3, 10), null), Ct);
+        var reports = fixture.Get<IReportQueries>();
+
+        var rentMonths = await reports.GetMonthlySummaryAsync(year, rentId, Ct);
+        var rentCategories = await reports.GetCategoryTotalsAsync(new DateOnly(year, 1, 1), new DateOnly(year, 12, 31), rentId, Ct);
+        var allMonths = await reports.GetMonthlySummaryAsync(year, null, Ct);
+
+        rentMonths.ShouldAllBe(m => m.BillCount == 1 && m.TotalAmount == 500m);
+        rentCategories.ShouldHaveSingleItem().ShouldBe(new CategoryTotalRow("Rent / Mortgage", 12, 6000m, 0m));
+        allMonths[2].ShouldBe(new MonthlySummaryRow(3, 2, 620m, 0m, 620m, 0m));
     }
 }

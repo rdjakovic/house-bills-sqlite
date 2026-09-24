@@ -16,6 +16,8 @@
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,12">
             <TextBlock Text="{loc:Tr Reports_Year}" VerticalAlignment="Center" Margin="0,0,8,0" />
             <ComboBox ItemsSource="{Binding Years}" SelectedItem="{Binding SelectedYear}" MinWidth="100" Margin="0,0,8,0" />
+            <TextBlock Text="{loc:Tr Reports_RecurringBill}" VerticalAlignment="Center" Margin="8,0,8,0" />
+            <ComboBox ItemsSource="{Binding RecurringBillOptions}" SelectedItem="{Binding SelectedRecurringBill}" DisplayMemberPath="Name" MinWidth="200" Margin="0,0,8,0" />
             <Button Content="{loc:Tr Common_Show}" Command="{Binding RefreshCommand}" Style="{StaticResource ToolbarButtonStyle}" />
             <Button Content="{loc:Tr Common_Export}" Command="{Binding ExportCommand}" Style="{StaticResource ToolbarButtonStyle}" />
         </StackPanel>

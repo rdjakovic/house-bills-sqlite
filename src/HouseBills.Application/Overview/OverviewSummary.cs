@@ -11,7 +11,6 @@ namespace HouseBills.Application.Overview;
 /// <param name="ThisMonthPaid">Paid amounts of the bills due this month.</param>
 /// <param name="LastMonthTotal">Sum of all bills due last calendar month.</param>
 /// <param name="NextBills">The first unpaid bills by due date (overdue first), with <see cref="BillListItem.Status"/> set.</param>
-/// <param name="LastTwelveMonths">Totals of bills due in each of the last 12 months, oldest first, ending with this month.</param>
 public sealed record OverviewSummary(
     int OverdueCount,
     decimal OverdueAmount,
@@ -20,5 +19,4 @@ public sealed record OverviewSummary(
     decimal ThisMonthTotal,
     decimal ThisMonthPaid,
     decimal LastMonthTotal,
-    IReadOnlyList<BillListItem> NextBills,
-    IReadOnlyList<MonthTotal> LastTwelveMonths);
+    IReadOnlyList<BillListItem> NextBills);

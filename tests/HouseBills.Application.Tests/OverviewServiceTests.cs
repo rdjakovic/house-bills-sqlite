@@ -2,7 +2,6 @@ using HouseBills.Application.Bills;
 using HouseBills.Application.Common;
 using HouseBills.Application.Overview;
 using HouseBills.Application.Persistence;
-using HouseBills.Application.Reports;
 using HouseBills.Domain;
 
 using NSubstitute;
@@ -15,7 +14,6 @@ public sealed class OverviewServiceTests
     private static readonly DateOnly SeptemberStart = new(2026, 9, 1);
 
     private readonly IBillRepository _bills = Substitute.For<IBillRepository>();
-    private readonly IReportQueries _reports = Substitute.For<IReportQueries>();
     private readonly OverviewService _service;
 
     public OverviewServiceTests()
@@ -23,9 +21,7 @@ public sealed class OverviewServiceTests
         var clock = Substitute.For<IClock>();
         clock.Today.Returns(TestData.Today);
         _bills.ListAsync(Arg.Any<BillFilter>(), Arg.Any<DateOnly>(), Arg.Any<CancellationToken>()).Returns([]);
-        _reports.GetMonthlySummaryAsync(Arg.Any<int>(), Arg.Any<CancellationToken>())
-            .Returns(Enumerable.Range(1, 12).Select(m => new MonthlySummaryRow(m, 0, 0m, 0m, 0m, 0m)).ToList());
-        _service = new OverviewService(_bills, _reports, clock);
+        _service = new OverviewService(_bills, clock);
     }
 
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
@@ -63,22 +59,6 @@ public sealed class OverviewServiceTests
         summary.ThisMonthTotal.ShouldBe(160m);
         summary.ThisMonthPaid.ShouldBe(90m);
         summary.LastMonthTotal.ShouldBe(200m);
-    }
-
-    [Fact]
-    public async Task GetSummaryAsync_Always_ReturnsLastTwelveMonthsAcrossTheYearBoundary()
-    {
-        // Current-year totals are 1000 + month, previous-year totals 2000 + month.
-        _reports.GetMonthlySummaryAsync(2026, Arg.Any<CancellationToken>())
-            .Returns(Enumerable.Range(1, 12).Select(m => new MonthlySummaryRow(m, 1, 1000m + m, 0m, 0m, 2000m + m)).ToList());
-
-        var summary = await _service.GetSummaryAsync(5, Ct);
-
-        summary.LastTwelveMonths.Count.ShouldBe(12);
-        summary.LastTwelveMonths[0].ShouldBe(new MonthTotal(2025, 10, 2010m));
-        summary.LastTwelveMonths[2].ShouldBe(new MonthTotal(2025, 12, 2012m));
-        summary.LastTwelveMonths[3].ShouldBe(new MonthTotal(2026, 1, 1001m));
-        summary.LastTwelveMonths[^1].ShouldBe(new MonthTotal(2026, 9, 1009m));
     }
 
     private static BillListItem Item(int id, decimal amount, DateOnly dueDate, decimal? paid = null) =>
