@@ -24,6 +24,7 @@ public sealed class BillsViewModelTests
     private readonly IPayeeService _payees = Substitute.For<IPayeeService>();
     private readonly ICategoryService _categories = Substitute.For<ICategoryService>();
     private readonly IDialogService _dialogs = Substitute.For<IDialogService>();
+    private readonly IFileSaver _files = Substitute.For<IFileSaver>();
     private readonly BillsViewModel _viewModel;
 
     public BillsViewModelTests()
@@ -36,7 +37,7 @@ public sealed class BillsViewModelTests
             Item(1, 100m, paidOn: null),
             Item(2, 40m, paidOn: Today),
         ]);
-        _viewModel = new BillsViewModel(_bills, _recurring, _payees, _categories, clock, _dialogs, NullLogger<BillsViewModel>.Instance);
+        _viewModel = new BillsViewModel(_bills, _recurring, _payees, _categories, clock, _files, _dialogs, NullLogger<BillsViewModel>.Instance);
     }
 
     [Fact]
@@ -64,6 +65,29 @@ public sealed class BillsViewModelTests
         await _bills.Received(1).ListAsync(Arg.Is<BillFilter>(f => f.Search == "struja"), Arg.Any<CancellationToken>());
         _viewModel.SearchText.ShouldBeNull();
         await _bills.Received(1).ListAsync(Arg.Is<BillFilter>(f => f.Search == null), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Export_LocationChosen_SavesTheListedBillsAsCsv()
+    {
+        await _viewModel.OnNavigatedToAsync();
+        _dialogs.PickCsvSaveLocation("HouseBills-2026-09-24.csv").Returns(@"D:\bills.csv");
+
+        await _viewModel.ExportCommand.ExecuteAsync(null);
+
+        await _files.Received(1).SaveTextAsync(@"D:\bills.csv", Arg.Is<string>(csv => csv.Split("\r\n", StringSplitOptions.RemoveEmptyEntries).Length == 3), Arg.Any<CancellationToken>());
+        _dialogs.Received(1).ShowInfo(Arg.Is<string>(m => m.Contains(@"D:\bills.csv")));
+    }
+
+    [Fact]
+    public async Task Export_FileOpenElsewhere_ShowsFriendlyError()
+    {
+        _dialogs.PickCsvSaveLocation(Arg.Any<string>()).Returns(@"D:\bills.csv");
+        _files.SaveTextAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).ThrowsAsync(new IOException("in use by EXCEL"));
+
+        await _viewModel.ExportCommand.ExecuteAsync(null);
+
+        _dialogs.Received(1).ShowError(Arg.Is<string>(m => !m.Contains("EXCEL")));
     }
 
     [Fact]

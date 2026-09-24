@@ -88,5 +88,5 @@ public sealed class ReportsViewModelTests
     }
 
     private ReportsViewModel CreateViewModel() =>
-        new(_reports, _clock, _colors, Substitute.For<IDialogService>(), NullLogger<ReportsViewModel>.Instance);
+        new(_reports, _clock, _colors, Substitute.For<IFileSaver>(), Substitute.For<IDialogService>(), NullLogger<ReportsViewModel>.Instance);
 }

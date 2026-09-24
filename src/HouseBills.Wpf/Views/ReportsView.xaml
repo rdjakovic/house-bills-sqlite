@@ -17,6 +17,7 @@
             <TextBlock Text="{loc:Tr Reports_Year}" VerticalAlignment="Center" Margin="0,0,8,0" />
             <ComboBox ItemsSource="{Binding Years}" SelectedItem="{Binding SelectedYear}" MinWidth="100" Margin="0,0,8,0" />
             <Button Content="{loc:Tr Common_Show}" Command="{Binding RefreshCommand}" Style="{StaticResource ToolbarButtonStyle}" />
+            <Button Content="{loc:Tr Common_Export}" Command="{Binding ExportCommand}" Style="{StaticResource ToolbarButtonStyle}" />
         </StackPanel>
 
         <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,12">
@@ -26,11 +27,11 @@
             </StackPanel>
             <StackPanel Margin="0,0,32,0">
                 <TextBlock Text="{loc:Tr Reports_Paid}" Opacity="0.8" />
-                <TextBlock Text="{Binding YearPaid, Converter={StaticResource Money}}" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource StatusPaidBrush}" />
+                <TextBlock Text="{Binding YearPaid, Converter={StaticResource Money}}" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource StatusPaidBrush}" />
             </StackPanel>
             <StackPanel Margin="0,0,32,0">
                 <TextBlock Text="{loc:Tr Reports_Outstanding}" Opacity="0.8" />
-                <TextBlock Text="{Binding YearOutstanding, Converter={StaticResource Money}}" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource StatusOverdueBrush}" />
+                <TextBlock Text="{Binding YearOutstanding, Converter={StaticResource Money}}" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource StatusOverdueBrush}" />
             </StackPanel>
             <StackPanel>
                 <TextBlock Text="{loc:Tr Reports_PreviousYear}" Opacity="0.8" />

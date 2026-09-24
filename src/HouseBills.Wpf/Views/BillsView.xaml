@@ -26,6 +26,7 @@
             <Button Content="{loc:Tr Bills_MarkUnpaid}" Command="{Binding MarkUnpaidCommand}" Style="{StaticResource ToolbarButtonStyle}" />
             <Button Content="{loc:Tr Common_Delete}" Command="{Binding DeleteCommand}" ToolTip="Delete" Style="{StaticResource ToolbarButtonStyle}" />
             <Button Content="{loc:Tr Bills_GenerateFromRecurring}" Command="{Binding GenerateCommand}" Style="{StaticResource ToolbarButtonStyle}" />
+            <Button Content="{loc:Tr Common_Export}" Command="{Binding ExportCommand}" Style="{StaticResource ToolbarButtonStyle}" />
         </StackPanel>
 
         <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,12" VerticalAlignment="Center">
@@ -76,7 +77,7 @@
             <TextBlock Text="{loc:Tr Bills_TotalLabel}" Opacity="0.8" Margin="0,0,4,0" />
             <TextBlock Text="{Binding TotalAmount, Converter={StaticResource Money}}" FontWeight="SemiBold" Margin="0,0,24,0" />
             <TextBlock Text="{loc:Tr Bills_OutstandingLabel}" Opacity="0.8" Margin="0,0,4,0" />
-            <TextBlock Text="{Binding OutstandingAmount, Converter={StaticResource Money}}" FontWeight="SemiBold" Foreground="{StaticResource StatusOverdueBrush}" />
+            <TextBlock Text="{Binding OutstandingAmount, Converter={StaticResource Money}}" FontWeight="SemiBold" Foreground="{DynamicResource StatusOverdueBrush}" />
         </StackPanel>
 
         <Grid>
@@ -95,8 +96,7 @@
                     <DataGridTemplateColumn Header="{loc:Tr Field_Status}" SortMemberPath="Status">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Status, Converter={StaticResource EnumText}}" FontWeight="SemiBold"
-                                           Foreground="{Binding Status, Converter={StaticResource BillStatusToBrush}}" />
+                                <TextBlock Text="{Binding Status, Converter={StaticResource EnumText}}" Style="{StaticResource StatusTextStyle}" />
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>

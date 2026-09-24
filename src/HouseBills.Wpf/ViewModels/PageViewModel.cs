@@ -85,6 +85,29 @@ public abstract partial class PageViewModel(IDialogService dialogs, ILogger logg
         return result.IsSuccess;
     }
 
+    /// <summary>
+    /// Asks where to save, writes the CSV built by <paramref name="buildCsv"/> and reports the outcome. A failure (e.g.
+    /// the file is open in Excel) is logged and shown as a friendly message.
+    /// </summary>
+    protected async Task ExportCsvAsync(IFileSaver files, string suggestedFileName, Func<string> buildCsv, CancellationToken cancellationToken)
+    {
+        if (Dialogs.PickCsvSaveLocation(suggestedFileName) is not { } path)
+        {
+            return;
+        }
+
+        try
+        {
+            await files.SaveTextAsync(path, buildCsv(), cancellationToken);
+            Dialogs.ShowInfo(string.Format(LocalizedStrings.FormattingCulture, Strings.Export_Done, path));
+        }
+        catch (Exception ex) when (ex is System.IO.IOException or UnauthorizedAccessException)
+        {
+            logger.LogError(ex, "Export failed.");
+            Dialogs.ShowError(Strings.Export_Failed);
+        }
+    }
+
     /// <summary>Runs a list action (delete, mark paid...), shows any business error, then reloads.</summary>
     protected Task<bool> ExecuteAndReloadAsync(Func<Task<Result>> action, Func<Task> reload, string failureMessage)
     {

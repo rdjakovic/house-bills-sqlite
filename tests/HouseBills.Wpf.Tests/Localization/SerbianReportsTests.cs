@@ -29,7 +29,7 @@ public sealed class SerbianReportsTests : IDisposable
         reports.GetMonthlySummaryAsync(2026, Arg.Any<CancellationToken>())
             .Returns(Enumerable.Range(1, 12).Select(m => new MonthlySummaryRow(m, 0, 0m, 0m, 0m, 0m)).ToList());
         reports.GetCategoryTotalsAsync(Arg.Any<DateOnly>(), Arg.Any<DateOnly>(), Arg.Any<CancellationToken>()).Returns([]);
-        var viewModel = new ReportsViewModel(reports, clock, Substitute.For<IChartColors>(), Substitute.For<IDialogService>(), NullLogger<ReportsViewModel>.Instance);
+        var viewModel = new ReportsViewModel(reports, clock, Substitute.For<IChartColors>(), Substitute.For<IFileSaver>(), Substitute.For<IDialogService>(), NullLogger<ReportsViewModel>.Instance);
 
         await viewModel.OnNavigatedToAsync();
 

@@ -9,6 +9,7 @@ using HouseBills.Application.Common;
 using HouseBills.Application.Payees;
 using HouseBills.Application.RecurringBills;
 using HouseBills.Presentation.Resources;
+using HouseBills.Wpf.Export;
 using HouseBills.Wpf.Localization;
 using HouseBills.Wpf.Services;
 using HouseBills.Wpf.ViewModels.Bills;
@@ -24,6 +25,7 @@ public sealed partial class BillsViewModel : PageViewModel
     private readonly IPayeeService _payees;
     private readonly ICategoryService _categories;
     private readonly IClock _clock;
+    private readonly IFileSaver _files;
     private bool _hasGeneratedBills;
 
     public BillsViewModel(
@@ -32,6 +34,7 @@ public sealed partial class BillsViewModel : PageViewModel
         IPayeeService payees,
         ICategoryService categories,
         IClock clock,
+        IFileSaver files,
         IDialogService dialogs,
         ILogger<BillsViewModel> logger)
         : base(dialogs, logger)
@@ -41,6 +44,7 @@ public sealed partial class BillsViewModel : PageViewModel
         _payees = payees;
         _categories = categories;
         _clock = clock;
+        _files = files;
         StatusFilter = BillStatusFilter.Unpaid;
     }
 
@@ -122,6 +126,14 @@ public sealed partial class BillsViewModel : PageViewModel
     private Task RefreshAsync(CancellationToken cancellationToken)
     {
         return RunAsync(() => LoadBillsAsync(cancellationToken), Strings.Bills_LoadFailed);
+    }
+
+    /// <summary>Exports the bills as listed (current filters) to a CSV file.</summary>
+    [RelayCommand]
+    private Task ExportAsync(CancellationToken cancellationToken)
+    {
+        var name = $"HouseBills-{_clock.Today.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)}.csv";
+        return ExportCsvAsync(_files, name, () => CsvExports.Bills(Bills), cancellationToken);
     }
 
     [RelayCommand]

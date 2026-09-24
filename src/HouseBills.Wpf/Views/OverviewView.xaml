@@ -44,7 +44,7 @@
                             <Style TargetType="TextBlock" BasedOn="{StaticResource CardAmountStyle}">
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding HasOverdue}" Value="True">
-                                        <Setter Property="Foreground" Value="{StaticResource StatusOverdueBrush}" />
+                                        <Setter Property="Foreground" Value="{DynamicResource StatusOverdueBrush}" />
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
@@ -95,8 +95,7 @@
                             <DataGridTemplateColumn Header="{loc:Tr Field_Status}" SortMemberPath="Status">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding Status, Converter={StaticResource EnumText}}" FontWeight="SemiBold"
-                                                   Foreground="{Binding Status, Converter={StaticResource BillStatusToBrush}}" />
+                                        <TextBlock Text="{Binding Status, Converter={StaticResource EnumText}}" Style="{StaticResource StatusTextStyle}" />
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>

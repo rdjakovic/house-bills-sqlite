@@ -514,4 +514,19 @@ Your current data is first saved as a safety copy in the backup folder.</value>
   <data name="Recurring_AmountVariesHelp" xml:space="preserve">
     <value>New bills are estimates based on the last actual amount; until there is one, the amount above is used.</value>
   </data>
+  <data name="Common_Export" xml:space="preserve">
+    <value>Export…</value>
+  </data>
+  <data name="Common_Yes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="Export_FileType" xml:space="preserve">
+    <value>CSV file (Excel)</value>
+  </data>
+  <data name="Export_Done" xml:space="preserve">
+    <value>Saved to {0}.</value>
+  </data>
+  <data name="Export_Failed" xml:space="preserve">
+    <value>The file could not be saved. If it is open in Excel, close it and try again.</value>
+  </data>
 </root>

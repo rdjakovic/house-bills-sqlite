@@ -109,6 +109,7 @@ public sealed class OverviewViewModelTests
         Substitute.For<IPayeeService>(),
         Substitute.For<ICategoryService>(),
         _clock,
+        Substitute.For<IFileSaver>(),
         Substitute.For<IDialogService>(),
         NullLogger<BillsViewModel>.Instance);
 }

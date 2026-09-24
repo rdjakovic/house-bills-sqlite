@@ -4,16 +4,32 @@
 
     <conv:DateOnlyToDateTimeConverter x:Key="DateOnlyToDateTime" />
     <conv:NullToVisibilityConverter x:Key="NullToVisibility" />
-    <conv:BillStatusToBrushConverter x:Key="BillStatusToBrush" />
     <conv:EnumToLocalizedTextConverter x:Key="EnumText" />
     <conv:MoneyConverter x:Key="Money" />
     <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
     <conv:EstimatedMoneyConverter x:Key="EstimatedMoney" />
 
-    <SolidColorBrush x:Key="StatusPaidBrush" Color="#2E7D32" />
-    <SolidColorBrush x:Key="StatusOverdueBrush" Color="#C62828" />
-    <SolidColorBrush x:Key="StatusDueSoonBrush" Color="#EF6C00" />
-    <SolidColorBrush x:Key="StatusUpcomingBrush" Color="#607D8B" />
+    <!-- Status{Status}Brush resources are set by ThemeService (Theming/StatusColors.cs): a light or dark set, swapped
+         with the theme, so always use them as DynamicResource. -->
+
+    <!-- Bill status text (Overdue, Due soon…) in its status color. -->
+    <Style x:Key="StatusTextStyle" TargetType="TextBlock">
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Status}" Value="Overdue">
+                <Setter Property="Foreground" Value="{DynamicResource StatusOverdueBrush}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Status}" Value="DueSoon">
+                <Setter Property="Foreground" Value="{DynamicResource StatusDueSoonBrush}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Status}" Value="Upcoming">
+                <Setter Property="Foreground" Value="{DynamicResource StatusUpcomingBrush}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Status}" Value="Paid">
+                <Setter Property="Foreground" Value="{DynamicResource StatusPaidBrush}" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
 
     <Style x:Key="PageTitleStyle" TargetType="TextBlock">
         <Setter Property="FontSize" Value="26" />
@@ -33,7 +49,7 @@
     </Style>
 
     <Style x:Key="ErrorTextStyle" TargetType="TextBlock">
-        <Setter Property="Foreground" Value="{StaticResource StatusOverdueBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource StatusOverdueBrush}" />
         <Setter Property="TextWrapping" Value="Wrap" />
         <Setter Property="Margin" Value="0,8,0,0" />
     </Style>
@@ -90,7 +106,7 @@
             <ItemsControl ItemsSource="{Binding}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <TextBlock Text="{Binding ErrorContent}" Foreground="{StaticResource StatusOverdueBrush}" FontSize="12" />
+                        <TextBlock Text="{Binding ErrorContent}" Foreground="{DynamicResource StatusOverdueBrush}" FontSize="12" />
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>

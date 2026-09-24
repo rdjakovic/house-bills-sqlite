@@ -2,16 +2,41 @@ using System.Windows;
 
 using HouseBills.Application.Preferences;
 
+using Microsoft.Win32;
+
 namespace HouseBills.Wpf.Theming;
 
-/// <summary>Switches WPF's Fluent theme between light, dark and the Windows setting.</summary>
-internal sealed class ThemeService(IUserPreferencesStore preferences) : IThemeService
+/// <summary>
+/// Switches WPF's Fluent theme between light, dark and the Windows setting, together with the app's own status colors.
+/// </summary>
+internal sealed class ThemeService : IThemeService
 {
+    private const string PersonalizeKey = @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize";
+
+    private readonly IUserPreferencesStore _preferences;
+
+    public ThemeService(IUserPreferencesStore preferences)
+    {
+        _preferences = preferences;
+
+        // Fluent follows a Windows light/dark switch by itself in System mode; the status colors must follow too.
+        if (System.Windows.Application.Current is not null)
+        {
+            SystemEvents.UserPreferenceChanged += (_, e) =>
+            {
+                if (e.Category == UserPreferenceCategory.General && Current == AppTheme.System)
+                {
+                    System.Windows.Application.Current?.Dispatcher.Invoke(ApplyStatusColors);
+                }
+            };
+        }
+    }
+
     public AppTheme Current { get; private set; } = AppTheme.System;
 
     public async Task InitializeAsync(CancellationToken cancellationToken)
     {
-        var saved = (await preferences.LoadAsync(cancellationToken)).Theme;
+        var saved = (await _preferences.LoadAsync(cancellationToken)).Theme;
         Apply(Enum.TryParse<AppTheme>(saved, ignoreCase: true, out var theme) && Enum.IsDefined(theme) ? theme : AppTheme.System);
     }
 
@@ -24,8 +49,8 @@ internal sealed class ThemeService(IUserPreferencesStore preferences) : IThemeSe
 
         Apply(theme);
 
-        var saved = await preferences.LoadAsync(cancellationToken);
-        await preferences.SaveAsync(saved with { Theme = theme.ToString() }, cancellationToken);
+        var saved = await _preferences.LoadAsync(cancellationToken);
+        await _preferences.SaveAsync(saved with { Theme = theme.ToString() }, cancellationToken);
     }
 
     private void Apply(AppTheme theme)
@@ -44,6 +69,24 @@ internal sealed class ThemeService(IUserPreferencesStore preferences) : IThemeSe
                 _ => ThemeMode.System,
             };
 #pragma warning restore WPF0001
+        }
+
+        ApplyStatusColors();
+    }
+
+    /// <summary>Windows' "app mode" setting; light if it can't be read.</summary>
+    private static bool WindowsUsesDarkMode()
+    {
+        using var key = Registry.CurrentUser.OpenSubKey(PersonalizeKey);
+        return key?.GetValue("AppsUseLightTheme") is int useLight && useLight == 0;
+    }
+
+    private void ApplyStatusColors()
+    {
+        if (System.Windows.Application.Current is { } application)
+        {
+            var dark = Current == AppTheme.Dark || (Current == AppTheme.System && WindowsUsesDarkMode());
+            StatusColors.Apply(application.Resources, dark);
         }
     }
 }

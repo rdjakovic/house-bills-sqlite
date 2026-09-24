@@ -66,6 +66,7 @@ internal sealed class LocalizationService(IUserPreferencesStore preferences, IMe
         Strings.Culture = culture;
         Messages.Culture = culture;
         LocalizedStrings.FormattingCulture = formatting;
+        LocalizedStrings.RegionalCulture = _windowsFormatting;
         CultureInfo.DefaultThreadCurrentUICulture = culture;
         CultureInfo.CurrentUICulture = culture;
         CultureInfo.DefaultThreadCurrentCulture = formatting;

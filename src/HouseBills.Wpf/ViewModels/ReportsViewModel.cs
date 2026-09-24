@@ -8,6 +8,7 @@ using HouseBills.Application.Common;
 using HouseBills.Application.Reports;
 using HouseBills.Presentation.Resources;
 using HouseBills.Wpf.Charts;
+using HouseBills.Wpf.Export;
 using HouseBills.Wpf.Localization;
 using HouseBills.Wpf.Services;
 using HouseBills.Wpf.ViewModels.Reports;
@@ -26,12 +27,14 @@ public sealed partial class ReportsViewModel : PageViewModel
 
     private readonly IReportQueries _reports;
     private readonly IChartColors _chartColors;
+    private readonly IFileSaver _files;
 
-    public ReportsViewModel(IReportQueries reports, IClock clock, IChartColors chartColors, IDialogService dialogs, ILogger<ReportsViewModel> logger)
+    public ReportsViewModel(IReportQueries reports, IClock clock, IChartColors chartColors, IFileSaver files, IDialogService dialogs, ILogger<ReportsViewModel> logger)
         : base(dialogs, logger)
     {
         _reports = reports;
         _chartColors = chartColors;
+        _files = files;
         var currentYear = clock.Today.Year;
         Years = Enumerable.Range(currentYear - YearsBack, YearsBack + 2).Reverse().ToList();
         SelectedYear = currentYear;
@@ -99,6 +102,11 @@ public sealed partial class ReportsViewModel : PageViewModel
     {
         return RunAsync(() => LoadAsync(SelectedYear, cancellationToken), Strings.Reports_LoadFailed);
     }
+
+    /// <summary>Exports the shown year (by month and by category) to a CSV file.</summary>
+    [RelayCommand]
+    private Task ExportAsync(CancellationToken cancellationToken) =>
+        ExportCsvAsync(_files, $"HouseBills-{SelectedYear.ToString(CultureInfo.InvariantCulture)}.csv", () => CsvExports.Report(Months, CategoryTotals), cancellationToken);
 
     private async Task LoadAsync(int year, CancellationToken cancellationToken)
     {

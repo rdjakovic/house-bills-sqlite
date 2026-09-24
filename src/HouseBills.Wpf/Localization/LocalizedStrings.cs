@@ -30,6 +30,12 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
     /// <summary>Formats that go with the chosen language (set by <see cref="LocalizationService"/>); used for amounts and messages.</summary>
     public static CultureInfo FormattingCulture { get; internal set; } = CultureInfo.CurrentCulture;
 
+    /// <summary>
+    /// The Windows regional settings the app started with, whatever language is chosen (set by
+    /// <see cref="LocalizationService"/>). For files other programs read, e.g. CSV for Excel.
+    /// </summary>
+    public static CultureInfo RegionalCulture { get; internal set; } = CultureInfo.CurrentCulture;
+
     /// <summary>Text for <paramref name="key"/> in the chosen UI language; "[key]" if missing, so gaps are visible.</summary>
     /// <remarks>Uses <see cref="Strings.Culture"/> (set by the localization service), like the typed properties.</remarks>
     public string this[string key] => Strings.ResourceManager.GetString(key, Strings.Culture) ?? $"[{key}]";

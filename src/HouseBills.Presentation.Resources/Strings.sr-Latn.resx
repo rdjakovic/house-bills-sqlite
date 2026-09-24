@@ -514,4 +514,19 @@ Trenutni podaci se prvo čuvaju kao sigurnosna kopija u fascikli rezervnih kopij
   <data name="Recurring_AmountVariesHelp" xml:space="preserve">
     <value>Novi računi su procene na osnovu poslednjeg stvarnog iznosa; dok ga nema, koristi se iznos iznad.</value>
   </data>
+  <data name="Common_Export" xml:space="preserve">
+    <value>Izvezi…</value>
+  </data>
+  <data name="Common_Yes" xml:space="preserve">
+    <value>Da</value>
+  </data>
+  <data name="Export_FileType" xml:space="preserve">
+    <value>CSV datoteka (Excel)</value>
+  </data>
+  <data name="Export_Done" xml:space="preserve">
+    <value>Sačuvano: {0}.</value>
+  </data>
+  <data name="Export_Failed" xml:space="preserve">
+    <value>Datoteka nije mogla da se sačuva. Ako je otvorena u Excelu, zatvorite je i pokušajte ponovo.</value>
+  </data>
 </root>
