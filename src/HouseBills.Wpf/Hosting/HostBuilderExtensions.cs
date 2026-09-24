@@ -52,6 +52,7 @@ internal static class HostBuilderExtensions
         services.AddSingleton<IChartColors, FluentChartColors>();
 
         services.AddSingleton<MainViewModel>();
+        services.AddSingleton<OverviewViewModel>();
         services.AddSingleton<BillsViewModel>();
         services.AddSingleton<RecurringBillsViewModel>();
         services.AddSingleton<PayeesViewModel>();

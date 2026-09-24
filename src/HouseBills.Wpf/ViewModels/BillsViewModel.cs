@@ -90,6 +90,17 @@ public sealed partial class BillsViewModel : PageViewModel
     [ObservableProperty]
     public partial PaymentEditorViewModel? Payment { get; set; }
 
+    /// <summary>Replaces all filters; used when another page opens the bill list (e.g. "overdue" on the overview).</summary>
+    public void ApplyFilter(BillStatusFilter status, DateOnly? dueFrom = null, DateOnly? dueTo = null)
+    {
+        StatusFilter = status;
+        DueFrom = dueFrom;
+        DueTo = dueTo;
+        CategoryFilterId = null;
+        PayeeFilterId = null;
+        SearchText = null;
+    }
+
     public override Task OnNavigatedToAsync()
     {
         return RunAsync(

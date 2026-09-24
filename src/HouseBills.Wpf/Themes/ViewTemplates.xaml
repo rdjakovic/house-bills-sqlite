@@ -4,6 +4,9 @@
                     xmlns:views="clr-namespace:HouseBills.Wpf.Views">
 
     <!-- Maps page view models to their views for the main window's ContentControl. -->
+    <DataTemplate DataType="{x:Type vm:OverviewViewModel}">
+        <views:OverviewView />
+    </DataTemplate>
     <DataTemplate DataType="{x:Type vm:BillsViewModel}">
         <views:BillsView />
     </DataTemplate>

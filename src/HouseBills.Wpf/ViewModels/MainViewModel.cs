@@ -11,19 +11,21 @@ namespace HouseBills.Wpf.ViewModels;
 public sealed partial class MainViewModel : ObservableObject, IRecipient<LanguageChangedMessage>
 {
     private readonly INavigationService _navigation;
+    private bool _followingNavigation;
 
     public MainViewModel(INavigationService navigation, IMessenger messenger)
     {
         _navigation = navigation;
-        _navigation.CurrentPageChanged += (_, _) => CurrentPage = _navigation.CurrentPage;
+        _navigation.CurrentPageChanged += (_, _) => OnCurrentPageChanged();
         Items =
         [
-            new NavigationItem(() => Strings.Page_Bills, n => n.NavigateToAsync<BillsViewModel>()),
-            new NavigationItem(() => Strings.Page_RecurringBills, n => n.NavigateToAsync<RecurringBillsViewModel>()),
-            new NavigationItem(() => Strings.Page_Payees, n => n.NavigateToAsync<PayeesViewModel>()),
-            new NavigationItem(() => Strings.Page_Categories, n => n.NavigateToAsync<CategoriesViewModel>()),
-            new NavigationItem(() => Strings.Page_Reports, n => n.NavigateToAsync<ReportsViewModel>()),
-            new NavigationItem(() => Strings.Page_Settings, n => n.NavigateToAsync<SettingsViewModel>(), isFooter: true),
+            NavigationItem.For<OverviewViewModel>(() => Strings.Page_Overview),
+            NavigationItem.For<BillsViewModel>(() => Strings.Page_Bills),
+            NavigationItem.For<RecurringBillsViewModel>(() => Strings.Page_RecurringBills),
+            NavigationItem.For<PayeesViewModel>(() => Strings.Page_Payees),
+            NavigationItem.For<CategoriesViewModel>(() => Strings.Page_Categories),
+            NavigationItem.For<ReportsViewModel>(() => Strings.Page_Reports),
+            NavigationItem.For<SettingsViewModel>(() => Strings.Page_Settings, isFooter: true),
         ];
         messenger.RegisterAll(this);
     }
@@ -52,9 +54,33 @@ public sealed partial class MainViewModel : ObservableObject, IRecipient<Languag
 
     partial void OnSelectedItemChanged(NavigationItem? value)
     {
-        if (value is not null)
+        if (value is not null && !_followingNavigation)
         {
             NavigateCommand.Execute(value);
+        }
+    }
+
+    /// <summary>
+    /// Shows the new page and, when a page opened another one (e.g. Overview → Bills), highlights its menu entry
+    /// without navigating again.
+    /// </summary>
+    private void OnCurrentPageChanged()
+    {
+        CurrentPage = _navigation.CurrentPage;
+        var item = Items.FirstOrDefault(i => i.PageType == CurrentPage?.GetType());
+        if (item is null || item == SelectedItem)
+        {
+            return;
+        }
+
+        _followingNavigation = true;
+        try
+        {
+            SelectedItem = item;
+        }
+        finally
+        {
+            _followingNavigation = false;
         }
     }
 

@@ -439,4 +439,43 @@ Your current data is first saved as a safety copy in the backup folder.</value>
   <data name="Reports_NoCategoryData" xml:space="preserve">
     <value>No bills in this year.</value>
   </data>
+  <data name="Page_Overview" xml:space="preserve">
+    <value>Overview</value>
+  </data>
+  <data name="Overview_Overdue" xml:space="preserve">
+    <value>Overdue</value>
+  </data>
+  <data name="Overview_DueSoon" xml:space="preserve">
+    <value>Due in the next {0} days</value>
+  </data>
+  <data name="Overview_ThisMonth" xml:space="preserve">
+    <value>Due this month</value>
+  </data>
+  <data name="Overview_BillCount" xml:space="preserve">
+    <value>Bills: {0}</value>
+  </data>
+  <data name="Overview_PaidSoFar" xml:space="preserve">
+    <value>Paid so far: {0}</value>
+  </data>
+  <data name="Overview_ChangeVsLastMonth" xml:space="preserve">
+    <value>{0} compared with last month</value>
+  </data>
+  <data name="Overview_NextBills" xml:space="preserve">
+    <value>Next bills to pay</value>
+  </data>
+  <data name="Overview_NothingToPay" xml:space="preserve">
+    <value>Nothing to pay: all bills are paid.</value>
+  </data>
+  <data name="Overview_AllUnpaid" xml:space="preserve">
+    <value>All unpaid bills</value>
+  </data>
+  <data name="Overview_LastTwelveMonths" xml:space="preserve">
+    <value>Last 12 months</value>
+  </data>
+  <data name="Overview_NoHistory" xml:space="preserve">
+    <value>No bills in the last 12 months.</value>
+  </data>
+  <data name="Overview_LoadFailed" xml:space="preserve">
+    <value>Could not load the overview.</value>
+  </data>
 </root>

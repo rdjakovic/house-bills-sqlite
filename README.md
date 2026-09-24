@@ -10,6 +10,7 @@ Built with .NET 10, WPF (Fluent theme) and SQLite. Everything stays on your own 
 
 ## Features
 
+- **Overview** (start page) — what's overdue and due in the next 7 days (with a shortcut to those bills), this month's total and how it compares with last month, the next bills to pay, and the last 12 months as a chart.
 - **Bills** — add, edit and delete bills; record payments (date and amount) or mark a bill unpaid again. Filter by status, due-date range, category or payee, or search by text (description, payee, category or notes). Each bill is shown as **Overdue**, **Due soon** (within 7 days), **Upcoming** or **Paid**, with totals and the outstanding amount.
 - **Recurring bills** — templates that repeat weekly, monthly, quarterly or yearly, with an optional end date. Bills are generated automatically for the next 31 days when the app starts (and on demand). Pausing and resuming a template doesn't back-fill the paused period; deleting a generated bill doesn't bring it back.
 - **Payees and categories** — names are unique; anything still in use can't be deleted. Seven starter categories are created with the database.

@@ -439,4 +439,43 @@ Trenutni podaci se prvo čuvaju kao sigurnosna kopija u fascikli rezervnih kopij
   <data name="Reports_NoCategoryData" xml:space="preserve">
     <value>Nema računa u ovoj godini.</value>
   </data>
+  <data name="Page_Overview" xml:space="preserve">
+    <value>Pregled</value>
+  </data>
+  <data name="Overview_Overdue" xml:space="preserve">
+    <value>Kasni</value>
+  </data>
+  <data name="Overview_DueSoon" xml:space="preserve">
+    <value>Dospeva u narednih {0} dana</value>
+  </data>
+  <data name="Overview_ThisMonth" xml:space="preserve">
+    <value>Za plaćanje ovog meseca</value>
+  </data>
+  <data name="Overview_BillCount" xml:space="preserve">
+    <value>Računa: {0}</value>
+  </data>
+  <data name="Overview_PaidSoFar" xml:space="preserve">
+    <value>Do sada plaćeno: {0}</value>
+  </data>
+  <data name="Overview_ChangeVsLastMonth" xml:space="preserve">
+    <value>{0} u odnosu na prošli mesec</value>
+  </data>
+  <data name="Overview_NextBills" xml:space="preserve">
+    <value>Sledeći računi za plaćanje</value>
+  </data>
+  <data name="Overview_NothingToPay" xml:space="preserve">
+    <value>Nema ništa za plaćanje: svi računi su plaćeni.</value>
+  </data>
+  <data name="Overview_AllUnpaid" xml:space="preserve">
+    <value>Svi neplaćeni računi</value>
+  </data>
+  <data name="Overview_LastTwelveMonths" xml:space="preserve">
+    <value>Poslednjih 12 meseci</value>
+  </data>
+  <data name="Overview_NoHistory" xml:space="preserve">
+    <value>Nema računa u poslednjih 12 meseci.</value>
+  </data>
+  <data name="Overview_LoadFailed" xml:space="preserve">
+    <value>Pregled nije mogao da se učita.</value>
+  </data>
 </root>

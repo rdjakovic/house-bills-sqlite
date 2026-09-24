@@ -18,8 +18,6 @@ using LiveChartsCore.SkiaSharpView.Painting;
 
 using Microsoft.Extensions.Logging;
 
-using SkiaSharp;
-
 namespace HouseBills.Wpf.ViewModels;
 
 public sealed partial class ReportsViewModel : PageViewModel
@@ -114,7 +112,7 @@ public sealed partial class ReportsViewModel : PageViewModel
         foreach (var month in months)
         {
             var fraction = max == 0m ? 0d : (double)(month.TotalAmount / max);
-            Months.Add(new MonthlySummaryItem(Capitalize(uiCulture.DateTimeFormat.GetMonthName(month.Month), uiCulture), month, fraction));
+            Months.Add(new MonthlySummaryItem(MoneyCharts.Capitalize(uiCulture.DateTimeFormat.GetMonthName(month.Month), uiCulture), month, fraction));
         }
 
         CategoryTotals.Clear();
@@ -141,31 +139,12 @@ public sealed partial class ReportsViewModel : PageViewModel
         TooltipBackgroundPaint = new SolidColorPaint(_chartColors.TooltipBackground);
         HasChartData = months.Any(m => m.TotalAmount != 0m || m.PreviousYearTotalAmount != 0m);
 
-        var uiCulture = LocalizedStrings.Culture;
-        MonthXAxes =
-        [
-            new Axis
-            {
-                Labels = Enumerable.Range(1, 12).Select(m => Capitalize(uiCulture.DateTimeFormat.GetAbbreviatedMonthName(m), uiCulture)).ToArray(),
-                LabelsPaint = text,
-                TextSize = 12,
-            },
-        ];
-        MonthYAxes =
-        [
-            new Axis
-            {
-                MinLimit = 0,
-                Labeler = value => FormatMoney((decimal)value, "C0"),
-                LabelsPaint = text,
-                SeparatorsPaint = new SolidColorPaint(_chartColors.Gridlines) { StrokeThickness = 1 },
-                TextSize = 12,
-            },
-        ];
+        MonthXAxes = [MoneyCharts.MonthAxis(Enumerable.Range(1, 12), text)];
+        MonthYAxes = [MoneyCharts.AmountAxis(text, _chartColors.Gridlines)];
         MonthSeries =
         [
-            CreateColumnSeries((year - 1).ToString(CultureInfo.InvariantCulture), months.Select(m => m.PreviousYearTotalAmount), ChartPalette.Comparison),
-            CreateColumnSeries(year.ToString(CultureInfo.InvariantCulture), months.Select(m => m.TotalAmount), ChartPalette.At(0)),
+            MoneyCharts.Columns((year - 1).ToString(CultureInfo.InvariantCulture), months.Select(m => m.PreviousYearTotalAmount), ChartPalette.Comparison),
+            MoneyCharts.Columns(year.ToString(CultureInfo.InvariantCulture), months.Select(m => m.TotalAmount), ChartPalette.At(0)),
         ];
 
         HasCategoryData = categories.Count > 0;
@@ -183,28 +162,10 @@ public sealed partial class ReportsViewModel : PageViewModel
             .ToArray();
     }
 
-    private static ColumnSeries<double> CreateColumnSeries(string name, IEnumerable<decimal> values, SKColor color)
-    {
-        return new ColumnSeries<double>
-        {
-            Name = name,
-            Values = values.Select(v => (double)v).ToArray(),
-            Fill = new SolidColorPaint(color),
-            MaxBarWidth = 18,
-            Padding = 2,
-            YToolTipLabelFormatter = point => FormatMoney((decimal)point.Model, "C"),
-        };
-    }
-
     /// <summary>"1.234,56 RSD (25 %)": the amount and its share of the year.</summary>
     private static string FormatShare(decimal amount, decimal total)
     {
-        var money = FormatMoney(amount, "C");
+        var money = MoneyCharts.Format(amount);
         return total == 0m ? money : $"{money} ({(amount / total).ToString("P0", LocalizedStrings.FormattingCulture)})";
     }
-
-    private static string FormatMoney(decimal amount, string format) => amount.ToString(format, LocalizedStrings.FormattingCulture);
-
-    private static string Capitalize(string text, CultureInfo culture) =>
-        text.Length == 0 ? text : culture.TextInfo.ToUpper(text[0]) + text[1..];
 }

@@ -30,4 +30,37 @@ public sealed class MainViewModelTests
 
         refreshed.ShouldBe([nameof(NavigationItem.Title)]);
     }
+
+    [Fact]
+    public void Start_Always_OpensOverviewFirst()
+    {
+        var navigation = Substitute.For<INavigationService>();
+        var viewModel = new MainViewModel(navigation, new StrongReferenceMessenger());
+
+        viewModel.Start();
+
+        viewModel.SelectedItem.ShouldNotBeNull().PageType.ShouldBe(typeof(OverviewViewModel));
+        navigation.Received(1).NavigateToAsync<OverviewViewModel>();
+    }
+
+    [Fact]
+    public void CurrentPageChanged_PageOpenedByAnotherPage_HighlightsItsMenuEntryWithoutNavigatingAgain()
+    {
+        var navigation = Substitute.For<INavigationService>();
+        var viewModel = new MainViewModel(navigation, new StrongReferenceMessenger());
+        var settings = new SettingsViewModel(
+            Substitute.For<ILocalizationService>(),
+            Substitute.For<HouseBills.Wpf.Theming.IThemeService>(),
+            Substitute.For<HouseBills.Application.Backups.IDatabaseBackup>(),
+            Substitute.For<HouseBills.Application.Common.IClock>(),
+            Substitute.For<IDialogService>(),
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<SettingsViewModel>.Instance);
+        navigation.CurrentPage.Returns(settings);
+
+        navigation.CurrentPageChanged += Raise.Event();
+
+        viewModel.CurrentPage.ShouldBe(settings);
+        viewModel.SelectedItem.ShouldNotBeNull().PageType.ShouldBe(typeof(SettingsViewModel));
+        navigation.DidNotReceive().NavigateToAsync<SettingsViewModel>();
+    }
 }
