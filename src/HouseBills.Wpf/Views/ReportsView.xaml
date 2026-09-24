@@ -115,11 +115,11 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
                         <DataGridTextColumn Header="{loc:Tr Column_BillCount}" Binding="{Binding Row.BillCount}" />
-                        <DataGridTextColumn Header="{loc:Tr Column_Total}" Binding="{Binding Row.TotalAmount, Converter={StaticResource Money}}" />
-                        <DataGridTextColumn Header="{loc:Tr Column_Paid}" Binding="{Binding Row.PaidAmount, Converter={StaticResource Money}}" />
-                        <DataGridTextColumn Header="{loc:Tr Column_Outstanding}" Binding="{Binding Row.OutstandingAmount, Converter={StaticResource Money}}" />
-                        <DataGridTextColumn Header="{loc:Tr Column_PreviousYear}" Binding="{Binding Row.PreviousYearTotalAmount, Converter={StaticResource Money}}" />
-                        <DataGridTextColumn Header="{loc:Tr Column_Change}" Binding="{Binding ChangeFromPreviousYear, Converter={StaticResource Money}}" />
+                        <DataGridTextColumn Header="{loc:Tr Column_Total}" Binding="{Binding Row.TotalAmount, Converter={StaticResource Money}}" ElementStyle="{StaticResource MoneyCellStyle}" HeaderStyle="{StaticResource MoneyHeaderStyle}" />
+                        <DataGridTextColumn Header="{loc:Tr Column_Paid}" Binding="{Binding Row.PaidAmount, Converter={StaticResource Money}}" ElementStyle="{StaticResource MoneyCellStyle}" HeaderStyle="{StaticResource MoneyHeaderStyle}" />
+                        <DataGridTextColumn Header="{loc:Tr Column_Outstanding}" Binding="{Binding Row.OutstandingAmount, Converter={StaticResource Money}}" ElementStyle="{StaticResource MoneyCellStyle}" HeaderStyle="{StaticResource MoneyHeaderStyle}" />
+                        <DataGridTextColumn Header="{loc:Tr Column_PreviousYear}" Binding="{Binding Row.PreviousYearTotalAmount, Converter={StaticResource Money}}" ElementStyle="{StaticResource MoneyCellStyle}" HeaderStyle="{StaticResource MoneyHeaderStyle}" />
+                        <DataGridTextColumn Header="{loc:Tr Column_Change}" Binding="{Binding ChangeFromPreviousYear, Converter={StaticResource Money}}" ElementStyle="{StaticResource MoneyCellStyle}" HeaderStyle="{StaticResource MoneyHeaderStyle}" />
                     </DataGrid.Columns>
                 </DataGrid>
             </DockPanel>
@@ -129,8 +129,8 @@
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="{loc:Tr Field_Category}" Binding="{Binding CategoryName}" Width="*" />
                         <DataGridTextColumn Header="{loc:Tr Column_BillCount}" Binding="{Binding BillCount}" />
-                        <DataGridTextColumn Header="{loc:Tr Column_Total}" Binding="{Binding TotalAmount, Converter={StaticResource Money}}" SortMemberPath="TotalAmount" />
-                        <DataGridTextColumn Header="{loc:Tr Column_Paid}" Binding="{Binding PaidAmount, Converter={StaticResource Money}}" SortMemberPath="PaidAmount" />
+                        <DataGridTextColumn Header="{loc:Tr Column_Total}" Binding="{Binding TotalAmount, Converter={StaticResource Money}}" SortMemberPath="TotalAmount" ElementStyle="{StaticResource MoneyCellStyle}" HeaderStyle="{StaticResource MoneyHeaderStyle}" />
+                        <DataGridTextColumn Header="{loc:Tr Column_Paid}" Binding="{Binding PaidAmount, Converter={StaticResource Money}}" SortMemberPath="PaidAmount" ElementStyle="{StaticResource MoneyCellStyle}" HeaderStyle="{StaticResource MoneyHeaderStyle}" />
                     </DataGrid.Columns>
                 </DataGrid>
             </DockPanel>

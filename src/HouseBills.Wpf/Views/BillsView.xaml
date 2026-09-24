@@ -105,7 +105,7 @@
                     <DataGridTextColumn Header="{loc:Tr Field_Description}" Binding="{Binding Description}" Width="*" />
                     <DataGridTextColumn Header="{loc:Tr Field_Payee}" Binding="{Binding PayeeName}" />
                     <DataGridTextColumn Header="{loc:Tr Field_Category}" Binding="{Binding CategoryName}" />
-                    <DataGridTextColumn Header="{loc:Tr Field_Amount}" SortMemberPath="Amount">
+                    <DataGridTextColumn Header="{loc:Tr Field_Amount}" SortMemberPath="Amount" HeaderStyle="{StaticResource MoneyHeaderStyle}">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource EstimatedMoney}">
                                 <Binding Path="Amount" />
@@ -113,7 +113,7 @@
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
                         <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource MoneyCellStyle}">
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IsEstimated}" Value="True">
                                         <Setter Property="FontStyle" Value="Italic" />
@@ -124,7 +124,7 @@
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
                     <DataGridTextColumn Header="{loc:Tr Field_PaidOn}" Binding="{Binding PaidOn, StringFormat=d}" SortMemberPath="PaidOn" MinWidth="90" />
-                    <DataGridTextColumn Header="{loc:Tr Column_Paid}" Binding="{Binding PaidAmount, Converter={StaticResource Money}}" SortMemberPath="PaidAmount" MinWidth="80" />
+                    <DataGridTextColumn Header="{loc:Tr Column_Paid}" Binding="{Binding PaidAmount, Converter={StaticResource Money}}" SortMemberPath="PaidAmount" MinWidth="80" ElementStyle="{StaticResource MoneyCellStyle}" HeaderStyle="{StaticResource MoneyHeaderStyle}" />
                 </DataGrid.Columns>
             </DataGrid>
 

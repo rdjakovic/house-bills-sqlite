@@ -60,12 +60,12 @@
     </Style>
 
     <Style x:Key="ToolbarButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-        <Setter Property="Margin" Value="0,0,8,0" />
+        <Setter Property="Margin" Value="0,0,4,0" />
         <Setter Property="MinWidth" Value="90" />
     </Style>
 
     <Style x:Key="AccentToolbarButtonStyle" TargetType="Button" BasedOn="{StaticResource AccentButtonStyle}">
-        <Setter Property="Margin" Value="0,0,8,0" />
+        <Setter Property="Margin" Value="0,0,4,0" />
         <Setter Property="MinWidth" Value="90" />
     </Style>
 
@@ -97,6 +97,15 @@
         <Setter Property="CanUserAddRows" Value="False" />
         <Setter Property="CanUserDeleteRows" Value="False" />
         <Setter Property="HeadersVisibility" Value="Column" />
+    </Style>
+
+    <!-- Money columns in lists: amounts right-aligned so digits line up, with space before the next column; the header follows its column. -->
+    <Style x:Key="MoneyCellStyle" TargetType="TextBlock">
+        <Setter Property="HorizontalAlignment" Value="Right" />
+        <Setter Property="Margin" Value="0,0,4,0" />
+    </Style>
+    <Style x:Key="MoneyHeaderStyle" TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+        <Setter Property="HorizontalContentAlignment" Value="Right" />
     </Style>
 
     <!-- Show INotifyDataErrorInfo messages under invalid inputs. -->

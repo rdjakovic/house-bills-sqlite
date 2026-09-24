@@ -41,7 +41,7 @@
                     <DataGridTextColumn Header="{loc:Tr Field_Name}" Binding="{Binding Name}" Width="*" />
                     <DataGridTextColumn Header="{loc:Tr Field_Payee}" Binding="{Binding PayeeName}" />
                     <DataGridTextColumn Header="{loc:Tr Field_Category}" Binding="{Binding CategoryName}" />
-                    <DataGridTextColumn Header="{loc:Tr Field_Amount}" SortMemberPath="Amount">
+                    <DataGridTextColumn Header="{loc:Tr Field_Amount}" SortMemberPath="Amount" HeaderStyle="{StaticResource MoneyHeaderStyle}">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource EstimatedMoney}">
                                 <Binding Path="Amount" />
@@ -49,7 +49,7 @@
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
                         <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource MoneyCellStyle}">
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding AmountVaries}" Value="True">
                                         <Setter Property="FontStyle" Value="Italic" />
