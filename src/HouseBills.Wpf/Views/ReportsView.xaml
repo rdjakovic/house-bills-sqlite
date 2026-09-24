@@ -9,18 +9,44 @@
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=vm:ReportsViewModel}"
              d:DesignWidth="1000"
-             d:DesignHeight="700">
+             d:DesignHeight="700"
+             SizeChanged="OnSizeChanged">
     <DockPanel>
+        <!-- Wide: the month and category sections sit side by side and share the height.
+             Narrow: the category section moves below the month section and the page scrolls. -->
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="WidthStates">
+                <VisualState x:Name="Wide" />
+                <VisualState x:Name="Narrow">
+                    <Storyboard>
+                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SectionsScroll" Storyboard.TargetProperty="VerticalScrollBarVisibility">
+                            <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static ScrollBarVisibility.Auto}" />
+                        </ObjectAnimationUsingKeyFrames>
+                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="CategoryColumn" Storyboard.TargetProperty="Width">
+                            <DiscreteObjectKeyFrame KeyTime="0">
+                                <DiscreteObjectKeyFrame.Value>
+                                    <GridLength>0</GridLength>
+                                </DiscreteObjectKeyFrame.Value>
+                            </DiscreteObjectKeyFrame>
+                        </ObjectAnimationUsingKeyFrames>
+                        <Int32Animation Storyboard.TargetName="CategorySection" Storyboard.TargetProperty="(Grid.Row)" To="1" Duration="0" />
+                        <Int32Animation Storyboard.TargetName="CategorySection" Storyboard.TargetProperty="(Grid.Column)" To="0" Duration="0" />
+                        <ThicknessAnimation Storyboard.TargetName="MonthSection" Storyboard.TargetProperty="Margin" To="0,0,0,16" Duration="0" />
+                    </Storyboard>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+
         <TextBlock DockPanel.Dock="Top" Text="{Binding Title}" Style="{StaticResource PageTitleStyle}" />
 
-        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,12">
+        <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,12">
             <TextBlock Text="{loc:Tr Reports_Year}" VerticalAlignment="Center" Margin="0,0,8,0" />
             <ComboBox ItemsSource="{Binding Years}" SelectedItem="{Binding SelectedYear}" MinWidth="100" Margin="0,0,8,0" />
             <TextBlock Text="{loc:Tr Reports_RecurringBill}" VerticalAlignment="Center" Margin="8,0,8,0" />
             <ComboBox ItemsSource="{Binding RecurringBillOptions}" SelectedItem="{Binding SelectedRecurringBill}" DisplayMemberPath="Name" MinWidth="200" Margin="0,0,8,0" />
             <Button Content="{loc:Tr Common_Show}" Command="{Binding RefreshCommand}" Style="{StaticResource ToolbarButtonStyle}" />
             <Button Content="{loc:Tr Common_Export}" Command="{Binding ExportCommand}" Style="{StaticResource ToolbarButtonStyle}" />
-        </StackPanel>
+        </WrapPanel>
 
         <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,12">
             <StackPanel Margin="0,0,32,0">
@@ -41,99 +67,122 @@
             </StackPanel>
         </WrapPanel>
 
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="3*" />
-                <ColumnDefinition Width="2*" />
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="260" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
+        <!-- Vertical scrolling is disabled in the wide state so the sections get the viewport height to share. -->
+        <ScrollViewer x:Name="SectionsScroll"
+                      VerticalScrollBarVisibility="Disabled"
+                      HorizontalScrollBarVisibility="Disabled"
+                      PreviewMouseWheel="OnSectionsScrollPreviewMouseWheel">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="3*" />
+                    <ColumnDefinition x:Name="CategoryColumn" Width="2*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
 
-            <TextBlock Grid.Row="0" Grid.Column="0" Text="{loc:Tr Reports_ByMonth}" Style="{StaticResource SectionTitleStyle}" />
-            <TextBlock Grid.Row="0" Grid.Column="1" Text="{loc:Tr Reports_ByCategory}" Style="{StaticResource SectionTitleStyle}" />
+                <!-- Both sections use the same rows, so titles, charts and tables line up when side by side. -->
+                <Grid x:Name="MonthSection" Grid.Row="0" Grid.Column="0" Margin="0,0,16,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="2*" MinHeight="180" />
+                        <RowDefinition Height="3*" MinHeight="150" />
+                    </Grid.RowDefinitions>
 
-            <!-- Charts are pictures of the tables below, which stay the accessible, exact view of the numbers. -->
-            <Grid Grid.Row="1" Grid.Column="0" Margin="0,0,16,12">
-                <lvc:CartesianChart Series="{Binding MonthSeries}"
-                                    XAxes="{Binding MonthXAxes}"
-                                    YAxes="{Binding MonthYAxes}"
-                                    LegendPosition="Top"
-                                    LegendTextPaint="{Binding ChartTextPaint}"
-                                    TooltipTextPaint="{Binding ChartTextPaint}"
-                                    TooltipBackgroundPaint="{Binding TooltipBackgroundPaint}"
-                                    ZoomMode="None"
-                                    Background="Transparent"
-                                    Visibility="{Binding HasChartData, Converter={StaticResource BoolToVisibility}}" />
-                <TextBlock Text="{loc:Tr Reports_NoChartData}" Opacity="0.7" HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <TextBlock.Style>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="Visibility" Value="Collapsed" />
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding HasChartData}" Value="False">
-                                    <Setter Property="Visibility" Value="Visible" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </TextBlock.Style>
-                </TextBlock>
+                    <TextBlock Grid.Row="0" Text="{loc:Tr Reports_ByMonth}" Style="{StaticResource SectionTitleStyle}" />
+
+                    <!-- Charts are pictures of the tables below, which stay the accessible, exact view of the numbers. -->
+                    <Grid Grid.Row="1" Margin="0,0,0,12">
+                        <lvc:CartesianChart Series="{Binding MonthSeries}"
+                                            XAxes="{Binding MonthXAxes}"
+                                            YAxes="{Binding MonthYAxes}"
+                                            LegendPosition="Top"
+                                            LegendTextPaint="{Binding ChartTextPaint}"
+                                            TooltipTextPaint="{Binding ChartTextPaint}"
+                                            TooltipBackgroundPaint="{Binding TooltipBackgroundPaint}"
+                                            ZoomMode="None"
+                                            Background="Transparent"
+                                            Visibility="{Binding HasChartData, Converter={StaticResource BoolToVisibility}}" />
+                        <TextBlock Text="{loc:Tr Reports_NoChartData}" Opacity="0.7" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasChartData}" Value="False">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Grid>
+
+                    <DockPanel Grid.Row="2">
+                        <DataGrid ItemsSource="{Binding Months}" Style="{StaticResource ListGridStyle}" CanUserSortColumns="False">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="{loc:Tr Column_Month}" Binding="{Binding MonthName}" />
+                                <DataGridTemplateColumn Header="" Width="*">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <ProgressBar Maximum="1" Value="{Binding BarFraction, Mode=OneWay}" Height="8" VerticalAlignment="Center" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="{loc:Tr Column_BillCount}" Binding="{Binding Row.BillCount}" />
+                                <DataGridTextColumn Header="{loc:Tr Column_Total}" Binding="{Binding Row.TotalAmount, Converter={StaticResource Money}}" ElementStyle="{StaticResource MoneyCellStyle}" HeaderStyle="{StaticResource MoneyHeaderStyle}" />
+                                <DataGridTextColumn Header="{loc:Tr Column_Paid}" Binding="{Binding Row.PaidAmount, Converter={StaticResource Money}}" ElementStyle="{StaticResource MoneyCellStyle}" HeaderStyle="{StaticResource MoneyHeaderStyle}" />
+                                <DataGridTextColumn Header="{loc:Tr Column_Outstanding}" Binding="{Binding Row.OutstandingAmount, Converter={StaticResource Money}}" ElementStyle="{StaticResource MoneyCellStyle}" HeaderStyle="{StaticResource MoneyHeaderStyle}" />
+                                <DataGridTextColumn Header="{loc:Tr Column_PreviousYear}" Binding="{Binding Row.PreviousYearTotalAmount, Converter={StaticResource Money}}" ElementStyle="{StaticResource MoneyCellStyle}" HeaderStyle="{StaticResource MoneyHeaderStyle}" />
+                                <DataGridTextColumn Header="{loc:Tr Column_Change}" Binding="{Binding ChangeFromPreviousYear, Converter={StaticResource Money}}" ElementStyle="{StaticResource MoneyCellStyle}" HeaderStyle="{StaticResource MoneyHeaderStyle}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </DockPanel>
+                </Grid>
+
+                <Grid x:Name="CategorySection" Grid.Row="0" Grid.Column="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="2*" MinHeight="180" />
+                        <RowDefinition Height="3*" MinHeight="150" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Text="{loc:Tr Reports_ByCategory}" Style="{StaticResource SectionTitleStyle}" />
+
+                    <Grid Grid.Row="1" Margin="0,0,0,12">
+                        <lvc:PieChart Series="{Binding CategorySeries}"
+                                      LegendPosition="Bottom"
+                                      Background="Transparent"
+                                      LegendTextPaint="{Binding ChartTextPaint}"
+                                      TooltipTextPaint="{Binding ChartTextPaint}"
+                                      TooltipBackgroundPaint="{Binding TooltipBackgroundPaint}"
+                                      Visibility="{Binding HasCategoryData, Converter={StaticResource BoolToVisibility}}" />
+                        <TextBlock Text="{loc:Tr Reports_NoCategoryData}" Opacity="0.7" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasCategoryData}" Value="False">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Grid>
+
+                    <DockPanel Grid.Row="2">
+                        <DataGrid ItemsSource="{Binding CategoryTotals}" Style="{StaticResource ListGridStyle}">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="{loc:Tr Field_Category}" Binding="{Binding CategoryName}" Width="*" />
+                                <DataGridTextColumn Header="{loc:Tr Column_BillCount}" Binding="{Binding BillCount}" />
+                                <DataGridTextColumn Header="{loc:Tr Column_Total}" Binding="{Binding TotalAmount, Converter={StaticResource Money}}" SortMemberPath="TotalAmount" ElementStyle="{StaticResource MoneyCellStyle}" HeaderStyle="{StaticResource MoneyHeaderStyle}" />
+                                <DataGridTextColumn Header="{loc:Tr Column_Paid}" Binding="{Binding PaidAmount, Converter={StaticResource Money}}" SortMemberPath="PaidAmount" ElementStyle="{StaticResource MoneyCellStyle}" HeaderStyle="{StaticResource MoneyHeaderStyle}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </DockPanel>
+                </Grid>
             </Grid>
-
-            <Grid Grid.Row="1" Grid.Column="1" Margin="0,0,0,12">
-                <lvc:PieChart Series="{Binding CategorySeries}"
-                              LegendPosition="Right"
-                              Background="Transparent"
-                              LegendTextPaint="{Binding ChartTextPaint}"
-                              TooltipTextPaint="{Binding ChartTextPaint}"
-                              TooltipBackgroundPaint="{Binding TooltipBackgroundPaint}"
-                              Visibility="{Binding HasCategoryData, Converter={StaticResource BoolToVisibility}}" />
-                <TextBlock Text="{loc:Tr Reports_NoCategoryData}" Opacity="0.7" HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <TextBlock.Style>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="Visibility" Value="Collapsed" />
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding HasCategoryData}" Value="False">
-                                    <Setter Property="Visibility" Value="Visible" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </TextBlock.Style>
-                </TextBlock>
-            </Grid>
-
-            <DockPanel Grid.Row="2" Grid.Column="0" Margin="0,0,16,0">
-                <DataGrid ItemsSource="{Binding Months}" Style="{StaticResource ListGridStyle}" CanUserSortColumns="False">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="{loc:Tr Column_Month}" Binding="{Binding MonthName}" />
-                        <DataGridTemplateColumn Header="" Width="*">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <ProgressBar Maximum="1" Value="{Binding BarFraction, Mode=OneWay}" Height="8" VerticalAlignment="Center" />
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                        <DataGridTextColumn Header="{loc:Tr Column_BillCount}" Binding="{Binding Row.BillCount}" />
-                        <DataGridTextColumn Header="{loc:Tr Column_Total}" Binding="{Binding Row.TotalAmount, Converter={StaticResource Money}}" ElementStyle="{StaticResource MoneyCellStyle}" HeaderStyle="{StaticResource MoneyHeaderStyle}" />
-                        <DataGridTextColumn Header="{loc:Tr Column_Paid}" Binding="{Binding Row.PaidAmount, Converter={StaticResource Money}}" ElementStyle="{StaticResource MoneyCellStyle}" HeaderStyle="{StaticResource MoneyHeaderStyle}" />
-                        <DataGridTextColumn Header="{loc:Tr Column_Outstanding}" Binding="{Binding Row.OutstandingAmount, Converter={StaticResource Money}}" ElementStyle="{StaticResource MoneyCellStyle}" HeaderStyle="{StaticResource MoneyHeaderStyle}" />
-                        <DataGridTextColumn Header="{loc:Tr Column_PreviousYear}" Binding="{Binding Row.PreviousYearTotalAmount, Converter={StaticResource Money}}" ElementStyle="{StaticResource MoneyCellStyle}" HeaderStyle="{StaticResource MoneyHeaderStyle}" />
-                        <DataGridTextColumn Header="{loc:Tr Column_Change}" Binding="{Binding ChangeFromPreviousYear, Converter={StaticResource Money}}" ElementStyle="{StaticResource MoneyCellStyle}" HeaderStyle="{StaticResource MoneyHeaderStyle}" />
-                    </DataGrid.Columns>
-                </DataGrid>
-            </DockPanel>
-
-            <DockPanel Grid.Row="2" Grid.Column="1">
-                <DataGrid ItemsSource="{Binding CategoryTotals}" Style="{StaticResource ListGridStyle}">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="{loc:Tr Field_Category}" Binding="{Binding CategoryName}" Width="*" />
-                        <DataGridTextColumn Header="{loc:Tr Column_BillCount}" Binding="{Binding BillCount}" />
-                        <DataGridTextColumn Header="{loc:Tr Column_Total}" Binding="{Binding TotalAmount, Converter={StaticResource Money}}" SortMemberPath="TotalAmount" ElementStyle="{StaticResource MoneyCellStyle}" HeaderStyle="{StaticResource MoneyHeaderStyle}" />
-                        <DataGridTextColumn Header="{loc:Tr Column_Paid}" Binding="{Binding PaidAmount, Converter={StaticResource Money}}" SortMemberPath="PaidAmount" ElementStyle="{StaticResource MoneyCellStyle}" HeaderStyle="{StaticResource MoneyHeaderStyle}" />
-                    </DataGrid.Columns>
-                </DataGrid>
-            </DockPanel>
-        </Grid>
+        </ScrollViewer>
     </DockPanel>
 </UserControl>
