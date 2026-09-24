@@ -15,7 +15,7 @@ public sealed class Bill : Entity
         Description = string.Empty;
     }
 
-    public Bill(string description, int payeeId, int categoryId, decimal amount, DateOnly dueDate, string? notes)
+    public Bill(string description, int payeeId, int categoryId, decimal amount, DateOnly dueDate, string? notes, bool isEstimated = false)
     {
         Description = Guard.RequiredText(description, DescriptionMaxLength, nameof(description));
         PayeeId = Guard.Id(payeeId, nameof(payeeId));
@@ -23,6 +23,7 @@ public sealed class Bill : Entity
         Amount = Guard.Money(amount, nameof(amount));
         DueDate = dueDate;
         Notes = Guard.OptionalText(notes, NotesMaxLength, nameof(notes));
+        IsEstimated = isEstimated;
     }
 
     public string Description { get; private set; }
@@ -44,6 +45,12 @@ public sealed class Bill : Entity
     /// <summary>The template this bill was generated from, if any.</summary>
     public int? RecurringBillId { get; private set; }
 
+    /// <summary>
+    /// <see cref="Amount"/> is an estimate (generated from a template whose amount varies) until the real amount is
+    /// entered or the bill is paid.
+    /// </summary>
+    public bool IsEstimated { get; private set; }
+
     public bool IsPaid => PaidOn.HasValue;
 
     public static BillStatus DetermineStatus(DateOnly dueDate, DateOnly? paidOn, DateOnly today)
@@ -61,9 +68,9 @@ public sealed class Bill : Entity
         return dueDate <= today.AddDays(DueSoonDays) ? BillStatus.DueSoon : BillStatus.Upcoming;
     }
 
-    internal static Bill FromRecurring(RecurringBill template, DateOnly dueDate)
+    internal static Bill FromRecurring(RecurringBill template, DateOnly dueDate, decimal amount)
     {
-        return new Bill(template.Name, template.PayeeId, template.CategoryId, template.Amount, dueDate, template.Notes)
+        return new Bill(template.Name, template.PayeeId, template.CategoryId, amount, dueDate, template.Notes, template.AmountVaries)
         {
             RecurringBillId = template.Id,
         };
@@ -71,7 +78,7 @@ public sealed class Bill : Entity
 
     public BillStatus GetStatus(DateOnly today) => DetermineStatus(DueDate, PaidOn, today);
 
-    public void Update(string description, int payeeId, int categoryId, decimal amount, DateOnly dueDate, string? notes)
+    public void Update(string description, int payeeId, int categoryId, decimal amount, DateOnly dueDate, string? notes, bool isEstimated)
     {
         Description = Guard.RequiredText(description, DescriptionMaxLength, nameof(description));
         PayeeId = Guard.Id(payeeId, nameof(payeeId));
@@ -79,12 +86,19 @@ public sealed class Bill : Entity
         Amount = Guard.Money(amount, nameof(amount));
         DueDate = dueDate;
         Notes = Guard.OptionalText(notes, NotesMaxLength, nameof(notes));
+        IsEstimated = isEstimated;
     }
 
+    /// <summary>Records the payment. For an estimated bill, the paid amount becomes its actual amount.</summary>
     public void MarkPaid(DateOnly paidOn, decimal paidAmount)
     {
         PaidAmount = Guard.Money(paidAmount, nameof(paidAmount));
         PaidOn = paidOn;
+        if (IsEstimated)
+        {
+            Amount = paidAmount;
+            IsEstimated = false;
+        }
     }
 
     public void MarkUnpaid()

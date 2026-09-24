@@ -104,7 +104,24 @@
                     <DataGridTextColumn Header="{loc:Tr Field_Description}" Binding="{Binding Description}" Width="*" />
                     <DataGridTextColumn Header="{loc:Tr Field_Payee}" Binding="{Binding PayeeName}" />
                     <DataGridTextColumn Header="{loc:Tr Field_Category}" Binding="{Binding CategoryName}" />
-                    <DataGridTextColumn Header="{loc:Tr Field_Amount}" Binding="{Binding Amount, Converter={StaticResource Money}}" SortMemberPath="Amount" />
+                    <DataGridTextColumn Header="{loc:Tr Field_Amount}" SortMemberPath="Amount">
+                        <DataGridTextColumn.Binding>
+                            <MultiBinding Converter="{StaticResource EstimatedMoney}">
+                                <Binding Path="Amount" />
+                                <Binding Path="IsEstimated" />
+                            </MultiBinding>
+                        </DataGridTextColumn.Binding>
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsEstimated}" Value="True">
+                                        <Setter Property="FontStyle" Value="Italic" />
+                                        <Setter Property="ToolTip" Value="{loc:Tr Bills_EstimatedTooltip}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
                     <DataGridTextColumn Header="{loc:Tr Field_PaidOn}" Binding="{Binding PaidOn, StringFormat=d}" SortMemberPath="PaidOn" MinWidth="90" />
                     <DataGridTextColumn Header="{loc:Tr Column_Paid}" Binding="{Binding PaidAmount, Converter={StaticResource Money}}" SortMemberPath="PaidAmount" MinWidth="80" />
                 </DataGrid.Columns>
@@ -126,6 +143,7 @@
                         <ComboBox ItemsSource="{Binding Categories}" DisplayMemberPath="Name" SelectedValuePath="Id" SelectedValue="{Binding CategoryId}" Style="{StaticResource EditorComboBoxStyle}" />
                         <TextBlock Text="{loc:Tr Field_Amount}" Style="{StaticResource FieldLabelStyle}" />
                         <TextBox Text="{Binding Amount, UpdateSourceTrigger=PropertyChanged, TargetNullValue=''}" Style="{StaticResource EditorTextBoxStyle}" />
+                        <CheckBox Content="{loc:Tr Field_IsEstimated}" IsChecked="{Binding IsEstimated}" Margin="0,6,0,0" ToolTip="{loc:Tr Bills_EstimatedTooltip}" />
                         <TextBlock Text="{loc:Tr Field_DueDate}" Style="{StaticResource FieldLabelStyle}" />
                         <DatePicker SelectedDate="{Binding DueDate, Converter={StaticResource DateOnlyToDateTime}}" Style="{StaticResource EditorDatePickerStyle}" />
                         <TextBlock Text="{loc:Tr Field_Notes}" Style="{StaticResource FieldLabelStyle}" />
@@ -150,8 +168,17 @@
                     <TextBlock Text="{Binding Bill.Description}" FontWeight="SemiBold" TextWrapping="Wrap" />
                     <StackPanel Orientation="Horizontal" Opacity="0.8">
                         <TextBlock Text="{loc:Tr Bills_AmountDueLabel}" Margin="0,0,4,0" />
-                        <TextBlock Text="{Binding Bill.Amount, Converter={StaticResource Money}}" />
+                        <TextBlock>
+                            <TextBlock.Text>
+                                <MultiBinding Converter="{StaticResource EstimatedMoney}">
+                                    <Binding Path="Bill.Amount" />
+                                    <Binding Path="Bill.IsEstimated" />
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
                     </StackPanel>
+                    <TextBlock Text="{loc:Tr Bills_PaymentOfEstimate}" Opacity="0.8" TextWrapping="Wrap" Margin="0,4,0,0"
+                               Visibility="{Binding Bill.IsEstimated, Converter={StaticResource BoolToVisibility}}" />
                     <TextBlock Text="{loc:Tr Field_PaidOn}" Style="{StaticResource FieldLabelStyle}" />
                     <DatePicker SelectedDate="{Binding PaidOn, Converter={StaticResource DateOnlyToDateTime}}" Style="{StaticResource EditorDatePickerStyle}" />
                     <TextBlock Text="{loc:Tr Field_AmountPaid}" Style="{StaticResource FieldLabelStyle}" />

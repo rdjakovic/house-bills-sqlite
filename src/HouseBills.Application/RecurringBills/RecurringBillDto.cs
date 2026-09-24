@@ -18,6 +18,9 @@ public sealed record RecurringBillDto(
     DateOnly? GeneratedThrough,
     byte[] RowVersion)
 {
+    /// <summary>See <see cref="RecurringBill.AmountVaries"/>.</summary>
+    public bool AmountVaries { get; init; }
+
     /// <summary>Next due date from today, or <c>null</c> if inactive or ended.</summary>
     public DateOnly? NextDueDate { get; init; }
 }

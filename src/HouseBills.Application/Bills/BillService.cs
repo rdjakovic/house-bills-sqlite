@@ -32,7 +32,7 @@ internal sealed class BillService(
 
         if (request.Id is not { } id)
         {
-            var bill = new Bill(request.Description, request.PayeeId, request.CategoryId, request.Amount, request.DueDate, request.Notes);
+            var bill = new Bill(request.Description, request.PayeeId, request.CategoryId, request.Amount, request.DueDate, request.Notes, request.IsEstimated);
             await repository.AddAsync(bill, cancellationToken);
             return bill.Id;
         }
@@ -43,7 +43,7 @@ internal sealed class BillService(
             return Error.NotFound(Messages.Bill_NotFound);
         }
 
-        existing.Update(request.Description, request.PayeeId, request.CategoryId, request.Amount, request.DueDate, request.Notes);
+        existing.Update(request.Description, request.PayeeId, request.CategoryId, request.Amount, request.DueDate, request.Notes, request.IsEstimated);
         var result = await repository.TryUpdateAsync(existing, request.RowVersion, cancellationToken);
         return result.IsSuccess ? id : result.Error!;
     }

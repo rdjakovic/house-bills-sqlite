@@ -24,6 +24,7 @@ public sealed partial class BillEditorViewModel : EditorViewModel
         Amount = bill?.Amount;
         DueDate = bill?.DueDate ?? defaultDueDate;
         Notes = bill?.Notes;
+        IsEstimated = bill?.IsEstimated ?? false;
         ResetValidation();
     }
 
@@ -69,9 +70,13 @@ public sealed partial class BillEditorViewModel : EditorViewModel
     [MaxLength(Bill.NotesMaxLength, ErrorMessageResourceType = typeof(Strings), ErrorMessageResourceName = nameof(Strings.Validation_MaxLength))]
     public partial string? Notes { get; set; }
 
+    /// <summary>The amount is still an estimate; uncheck once the real amount is entered.</summary>
+    [ObservableProperty]
+    public partial bool IsEstimated { get; set; }
+
     /// <summary>Builds the request; call only after <see cref="EditorViewModel.Validate"/> succeeded.</summary>
     public SaveBillRequest ToRequest()
     {
-        return new SaveBillRequest(Id, Description, PayeeId!.Value, CategoryId!.Value, Amount!.Value, DueDate!.Value, Notes, RowVersion);
+        return new SaveBillRequest(Id, Description, PayeeId!.Value, CategoryId!.Value, Amount!.Value, DueDate!.Value, Notes, RowVersion, IsEstimated);
     }
 }

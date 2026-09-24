@@ -28,4 +28,14 @@ public sealed class MoneyConverterTests : IDisposable
     {
         new MoneyConverter().Convert(null, typeof(string), null, CultureInfo.InvariantCulture).ShouldBeNull();
     }
+
+    [Theory]
+    [InlineData(true, "≈ 1.234,56 RSD")]
+    [InlineData(false, "1.234,56 RSD")]
+    public void EstimatedMoney_Amount_PrefixesEstimates(bool isEstimated, string expected)
+    {
+        LocalizedStrings.FormattingCulture = FormattingCultures.Serbian;
+
+        new EstimatedMoneyConverter().Convert([1234.56m, isEstimated], typeof(string), null, CultureInfo.InvariantCulture).ShouldBe(expected);
+    }
 }

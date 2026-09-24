@@ -26,6 +26,7 @@ public sealed partial class RecurringBillEditorViewModel : EditorViewModel
         StartDate = template?.StartDate ?? defaultStartDate;
         EndDate = template?.EndDate;
         Notes = template?.Notes;
+        AmountVaries = template?.AmountVaries ?? false;
         ResetValidation();
     }
 
@@ -79,9 +80,13 @@ public sealed partial class RecurringBillEditorViewModel : EditorViewModel
     [MaxLength(RecurringBill.NotesMaxLength, ErrorMessageResourceType = typeof(Strings), ErrorMessageResourceName = nameof(Strings.Validation_MaxLength))]
     public partial string? Notes { get; set; }
 
+    /// <summary>Generated bills are estimates based on the last actual amount.</summary>
+    [ObservableProperty]
+    public partial bool AmountVaries { get; set; }
+
     /// <summary>Builds the request; call only after <see cref="EditorViewModel.Validate"/> succeeded.</summary>
     public SaveRecurringBillRequest ToRequest()
     {
-        return new SaveRecurringBillRequest(Id, Name, PayeeId!.Value, CategoryId!.Value, Amount!.Value, Frequency, StartDate!.Value, EndDate, Notes, RowVersion);
+        return new SaveRecurringBillRequest(Id, Name, PayeeId!.Value, CategoryId!.Value, Amount!.Value, Frequency, StartDate!.Value, EndDate, Notes, RowVersion, AmountVaries);
     }
 }

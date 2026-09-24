@@ -77,7 +77,10 @@ internal sealed class BillRepository(IDbContextFactory<AppDbContext> contextFact
                 r.Bill.PaidAmount,
                 r.Bill.Notes,
                 r.Bill.RecurringBillId,
-                r.Bill.RowVersion))
+                r.Bill.RowVersion)
+            {
+                IsEstimated = r.Bill.IsEstimated,
+            })
             .ToListAsync(cancellationToken);
     }
 

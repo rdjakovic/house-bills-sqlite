@@ -15,7 +15,7 @@ public sealed class RecurringBill : Entity
         Name = string.Empty;
     }
 
-    public RecurringBill(string name, int payeeId, int categoryId, decimal amount, RecurrenceSchedule schedule, string? notes)
+    public RecurringBill(string name, int payeeId, int categoryId, decimal amount, RecurrenceSchedule schedule, string? notes, bool amountVaries = false)
     {
         Name = Guard.RequiredText(name, NameMaxLength, nameof(name));
         PayeeId = Guard.Id(payeeId, nameof(payeeId));
@@ -25,6 +25,7 @@ public sealed class RecurringBill : Entity
         StartDate = schedule.StartDate;
         EndDate = schedule.EndDate;
         Notes = Guard.OptionalText(notes, NotesMaxLength, nameof(notes));
+        AmountVaries = amountVaries;
         IsActive = true;
     }
 
@@ -34,8 +35,14 @@ public sealed class RecurringBill : Entity
 
     public int CategoryId { get; private set; }
 
-    /// <summary>Expected amount for each generated bill.</summary>
+    /// <summary>Expected amount for each generated bill (for a varying amount: the estimate until a bill has been paid).</summary>
     public decimal Amount { get; private set; }
+
+    /// <summary>
+    /// The amount differs each time (e.g. electricity): generated bills are estimates, based on the last actual amount of
+    /// a bill from this template, until the real amount is entered or paid.
+    /// </summary>
+    public bool AmountVaries { get; private set; }
 
     public BillFrequency Frequency { get; private set; }
 
@@ -55,7 +62,7 @@ public sealed class RecurringBill : Entity
 
     public RecurrenceSchedule Schedule => new(Frequency, StartDate, EndDate);
 
-    public void Update(string name, int payeeId, int categoryId, decimal amount, RecurrenceSchedule schedule, string? notes)
+    public void Update(string name, int payeeId, int categoryId, decimal amount, RecurrenceSchedule schedule, string? notes, bool amountVaries)
     {
         Name = Guard.RequiredText(name, NameMaxLength, nameof(name));
         PayeeId = Guard.Id(payeeId, nameof(payeeId));
@@ -65,6 +72,7 @@ public sealed class RecurringBill : Entity
         StartDate = schedule.StartDate;
         EndDate = schedule.EndDate;
         Notes = Guard.OptionalText(notes, NotesMaxLength, nameof(notes));
+        AmountVaries = amountVaries;
     }
 
     /// <summary>
@@ -89,7 +97,12 @@ public sealed class RecurringBill : Entity
     /// Creates bills for every due date after <see cref="GeneratedThrough"/> up to <paramref name="upTo"/> (inclusive)
     /// and advances <see cref="GeneratedThrough"/>. Inactive templates generate nothing.
     /// </summary>
-    public IReadOnlyList<Bill> GenerateBills(DateOnly upTo)
+    /// <param name="upTo">Last due date to generate.</param>
+    /// <param name="lastActualAmount">
+    /// For a varying amount: the actual amount of the most recent bill from this template, used as the estimate.
+    /// Ignored when the amount doesn't vary.
+    /// </param>
+    public IReadOnlyList<Bill> GenerateBills(DateOnly upTo, decimal? lastActualAmount = null)
     {
         if (!IsActive || (GeneratedThrough is { } through && through >= upTo))
         {
@@ -97,7 +110,8 @@ public sealed class RecurringBill : Entity
         }
 
         var from = GeneratedThrough?.AddDays(1) ?? StartDate;
-        var bills = Schedule.GetDueDates(from, upTo).Select(dueDate => Bill.FromRecurring(this, dueDate)).ToList();
+        var amount = AmountVaries ? lastActualAmount ?? Amount : Amount;
+        var bills = Schedule.GetDueDates(from, upTo).Select(dueDate => Bill.FromRecurring(this, dueDate, amount)).ToList();
         GeneratedThrough = upTo;
         return bills;
     }

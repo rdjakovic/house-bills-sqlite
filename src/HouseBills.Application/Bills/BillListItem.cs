@@ -18,4 +18,7 @@ public sealed record BillListItem(
     byte[] RowVersion)
 {
     public BillStatus Status { get; init; }
+
+    /// <summary>See <see cref="Bill.IsEstimated"/>.</summary>
+    public bool IsEstimated { get; init; }
 }

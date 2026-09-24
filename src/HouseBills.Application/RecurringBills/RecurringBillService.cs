@@ -56,7 +56,7 @@ internal sealed class RecurringBillService(
         var schedule = new RecurrenceSchedule(request.Frequency, request.StartDate, request.EndDate);
         if (request.Id is not { } id)
         {
-            var template = new RecurringBill(request.Name, request.PayeeId, request.CategoryId, request.Amount, schedule, request.Notes);
+            var template = new RecurringBill(request.Name, request.PayeeId, request.CategoryId, request.Amount, schedule, request.Notes, request.AmountVaries);
             await repository.AddAsync(template, cancellationToken);
             return template.Id;
         }
@@ -67,7 +67,7 @@ internal sealed class RecurringBillService(
             return Error.NotFound(Messages.RecurringBill_NotFound);
         }
 
-        existing.Update(request.Name, request.PayeeId, request.CategoryId, request.Amount, schedule, request.Notes);
+        existing.Update(request.Name, request.PayeeId, request.CategoryId, request.Amount, schedule, request.Notes, request.AmountVaries);
         var result = await repository.TryUpdateAsync(existing, request.RowVersion, cancellationToken);
         return result.IsSuccess ? id : result.Error!;
     }
@@ -93,11 +93,14 @@ internal sealed class RecurringBillService(
     {
         var upTo = clock.Today.AddDays(options.Value.GenerationLookaheadDays);
         var templates = await repository.ListActiveAsync(cancellationToken);
+        var lastActualAmounts = templates.Any(t => t.AmountVaries)
+            ? await repository.GetLastActualAmountsAsync(cancellationToken)
+            : new Dictionary<int, decimal>();
         var created = 0;
         foreach (var template in templates)
         {
             var expectedRowVersion = template.RowVersion;
-            var bills = template.GenerateBills(upTo);
+            var bills = template.GenerateBills(upTo, lastActualAmounts.TryGetValue(template.Id, out var last) ? last : null);
             if (bills.Count == 0)
             {
                 continue;

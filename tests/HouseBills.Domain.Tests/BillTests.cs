@@ -71,4 +71,38 @@ public sealed class BillTests
     }
 
     private static Bill CreateBill() => new("Electricity", 1, 1, 100m, Today, null);
+
+    [Fact]
+    public void MarkPaid_EstimatedBill_PaidAmountBecomesTheActualAmount()
+    {
+        var bill = new Bill("Electricity", 1, 1, 80m, Today, null, isEstimated: true);
+
+        bill.MarkPaid(Today, 93.10m);
+
+        bill.Amount.ShouldBe(93.10m);
+        bill.IsEstimated.ShouldBeFalse();
+        bill.PaidAmount.ShouldBe(93.10m);
+    }
+
+    [Fact]
+    public void MarkPaid_ActualBill_KeepsItsAmount()
+    {
+        var bill = new Bill("Rent", 1, 1, 500m, Today, null);
+
+        bill.MarkPaid(Today, 450m);
+
+        bill.Amount.ShouldBe(500m);
+        bill.PaidAmount.ShouldBe(450m);
+    }
+
+    [Fact]
+    public void Update_EstimateConfirmed_ClearsEstimate()
+    {
+        var bill = new Bill("Electricity", 1, 1, 80m, Today, null, isEstimated: true);
+
+        bill.Update("Electricity", 1, 1, 91.40m, Today, null, isEstimated: false);
+
+        bill.Amount.ShouldBe(91.40m);
+        bill.IsEstimated.ShouldBeFalse();
+    }
 }

@@ -41,7 +41,24 @@
                     <DataGridTextColumn Header="{loc:Tr Field_Name}" Binding="{Binding Name}" Width="*" />
                     <DataGridTextColumn Header="{loc:Tr Field_Payee}" Binding="{Binding PayeeName}" />
                     <DataGridTextColumn Header="{loc:Tr Field_Category}" Binding="{Binding CategoryName}" />
-                    <DataGridTextColumn Header="{loc:Tr Field_Amount}" Binding="{Binding Amount, Converter={StaticResource Money}}" SortMemberPath="Amount" />
+                    <DataGridTextColumn Header="{loc:Tr Field_Amount}" SortMemberPath="Amount">
+                        <DataGridTextColumn.Binding>
+                            <MultiBinding Converter="{StaticResource EstimatedMoney}">
+                                <Binding Path="Amount" />
+                                <Binding Path="AmountVaries" />
+                            </MultiBinding>
+                        </DataGridTextColumn.Binding>
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding AmountVaries}" Value="True">
+                                        <Setter Property="FontStyle" Value="Italic" />
+                                        <Setter Property="ToolTip" Value="{loc:Tr Recurring_AmountVariesHelp}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
                     <DataGridTextColumn Header="{loc:Tr Field_Frequency}" Binding="{Binding Frequency, Converter={StaticResource EnumText}}" />
                     <DataGridTextColumn Header="{loc:Tr Column_NextDue}" Binding="{Binding NextDueDate, StringFormat=d}" SortMemberPath="NextDueDate" />
                     <DataGridTextColumn Header="{loc:Tr Column_Ends}" Binding="{Binding EndDate, StringFormat=d}" SortMemberPath="EndDate" />
@@ -64,6 +81,9 @@
                         <ComboBox ItemsSource="{Binding Categories}" DisplayMemberPath="Name" SelectedValuePath="Id" SelectedValue="{Binding CategoryId}" Style="{StaticResource EditorComboBoxStyle}" />
                         <TextBlock Text="{loc:Tr Field_Amount}" Style="{StaticResource FieldLabelStyle}" />
                         <TextBox Text="{Binding Amount, UpdateSourceTrigger=PropertyChanged, TargetNullValue=''}" Style="{StaticResource EditorTextBoxStyle}" />
+                        <CheckBox Content="{loc:Tr Recurring_AmountVaries}" IsChecked="{Binding AmountVaries}" Margin="0,6,0,0" />
+                        <TextBlock Text="{loc:Tr Recurring_AmountVariesHelp}" Opacity="0.7" TextWrapping="Wrap" FontSize="12" Margin="0,2,0,0"
+                                   Visibility="{Binding AmountVaries, Converter={StaticResource BoolToVisibility}}" />
                         <TextBlock Text="{loc:Tr Field_Frequency}" Style="{StaticResource FieldLabelStyle}" />
                         <ComboBox ItemsSource="{Binding Frequencies}" SelectedItem="{Binding Frequency}" Style="{StaticResource EditorComboBoxStyle}">
                             <ComboBox.ItemTemplate>

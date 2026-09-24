@@ -13,6 +13,12 @@ public interface IRecurringBillRepository : IRepository<RecurringBill>
     Task<IReadOnlyList<RecurringBill>> ListActiveAsync(CancellationToken cancellationToken);
 
     /// <summary>
+    /// Per template: the amount of its most recent (by due date) bill whose amount is actual, not an estimate.
+    /// Templates without such a bill are missing from the result.
+    /// </summary>
+    Task<IReadOnlyDictionary<int, decimal>> GetLastActualAmountsAsync(CancellationToken cancellationToken);
+
+    /// <summary>
     /// Atomically inserts <paramref name="bills"/> and saves the template's advanced
     /// <see cref="RecurringBill.GeneratedThrough"/>.
     /// </summary>

@@ -95,4 +95,21 @@ public sealed class RecurringBillServiceTests
 
     private static RecurringBillDto Dto(int id, bool isActive, DateOnly start) =>
         new(id, "Rent", 1, "Landlord", 1, "Rent", 900m, BillFrequency.Monthly, start, null, null, isActive, null, TestData.RowVersion);
+
+    [Fact]
+    public async Task GenerateUpcomingBillsAsync_AmountVaries_EstimatesFromLastActualAmount()
+    {
+        var template = TestData.Persisted(
+            new RecurringBill("Electricity", 1, 1, 50m, new RecurrenceSchedule(BillFrequency.Monthly, TestData.Today, null), null, amountVaries: true), 7);
+        _repository.ListActiveAsync(Arg.Any<CancellationToken>()).Returns([template]);
+        _repository.GetLastActualAmountsAsync(Arg.Any<CancellationToken>()).Returns(new Dictionary<int, decimal> { [7] = 61.25m });
+
+        await _service.GenerateUpcomingBillsAsync(TestContext.Current.CancellationToken);
+
+        await _repository.Received(1).SaveGeneratedBillsAsync(
+            template,
+            Arg.Any<byte[]>(),
+            Arg.Is<IReadOnlyList<Bill>>(bills => bills.Count > 0 && bills.All(b => b.Amount == 61.25m && b.IsEstimated)),
+            Arg.Any<CancellationToken>());
+    }
 }

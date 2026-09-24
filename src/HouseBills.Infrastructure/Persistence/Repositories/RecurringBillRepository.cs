@@ -31,8 +31,28 @@ internal sealed class RecurringBillRepository(IDbContextFactory<AppDbContext> co
                     r.Notes,
                     r.IsActive,
                     r.GeneratedThrough,
-                    r.RowVersion))
+                    r.RowVersion)
+                {
+                    AmountVaries = r.AmountVaries,
+                })
             .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyDictionary<int, decimal>> GetLastActualAmountsAsync(CancellationToken cancellationToken)
+    {
+        await using var db = await ContextFactory.CreateDbContextAsync(cancellationToken);
+
+        // An actual (non-estimated) bill with no later actual bill of the same template: a correlated NOT EXISTS that
+        // SQLite can run (a "first per group" query would need APPLY) and that uses IX_Bills_RecurringBillId_DueDate.
+        // That unique index also guarantees one bill per template and date, so each template appears once.
+        var latest = await (
+                from b in db.Bills.AsNoTracking()
+                where b.RecurringBillId != null
+                      && !b.IsEstimated
+                      && !db.Bills.Any(later => later.RecurringBillId == b.RecurringBillId && !later.IsEstimated && later.DueDate > b.DueDate)
+                select new { TemplateId = b.RecurringBillId!.Value, b.Amount })
+            .ToListAsync(cancellationToken);
+        return latest.ToDictionary(l => l.TemplateId, l => l.Amount);
     }
 
     public async Task<IReadOnlyList<RecurringBill>> ListActiveAsync(CancellationToken cancellationToken)

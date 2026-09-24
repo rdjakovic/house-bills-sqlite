@@ -499,4 +499,19 @@ Trenutni podaci se prvo čuvaju kao sigurnosna kopija u fascikli rezervnih kopij
   <data name="Settings_ReminderSaveFailed" xml:space="preserve">
     <value>Podešavanje podsetnika nije moglo da se promeni.</value>
   </data>
+  <data name="Field_IsEstimated" xml:space="preserve">
+    <value>Procenjen iznos</value>
+  </data>
+  <data name="Bills_EstimatedTooltip" xml:space="preserve">
+    <value>Procenjen iznos. Unesite pravi iznos kada račun stigne ili evidentirajte plaćanje.</value>
+  </data>
+  <data name="Bills_PaymentOfEstimate" xml:space="preserve">
+    <value>Iznos je procena: plaćeni iznos postaje iznos računa.</value>
+  </data>
+  <data name="Recurring_AmountVaries" xml:space="preserve">
+    <value>Iznos se menja (npr. struja)</value>
+  </data>
+  <data name="Recurring_AmountVariesHelp" xml:space="preserve">
+    <value>Novi računi su procene na osnovu poslednjeg stvarnog iznosa; dok ga nema, koristi se iznos iznad.</value>
+  </data>
 </root>

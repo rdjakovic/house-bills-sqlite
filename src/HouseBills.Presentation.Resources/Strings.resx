@@ -499,4 +499,19 @@ Your current data is first saved as a safety copy in the backup folder.</value>
   <data name="Settings_ReminderSaveFailed" xml:space="preserve">
     <value>The reminder setting could not be changed.</value>
   </data>
+  <data name="Field_IsEstimated" xml:space="preserve">
+    <value>Estimated amount</value>
+  </data>
+  <data name="Bills_EstimatedTooltip" xml:space="preserve">
+    <value>Estimated amount. Enter the real amount when the bill arrives, or record the payment.</value>
+  </data>
+  <data name="Bills_PaymentOfEstimate" xml:space="preserve">
+    <value>The amount is an estimate: the amount you pay becomes the bill's amount.</value>
+  </data>
+  <data name="Recurring_AmountVaries" xml:space="preserve">
+    <value>Amount varies (e.g. electricity)</value>
+  </data>
+  <data name="Recurring_AmountVariesHelp" xml:space="preserve">
+    <value>New bills are estimates based on the last actual amount; until there is one, the amount above is used.</value>
+  </data>
 </root>

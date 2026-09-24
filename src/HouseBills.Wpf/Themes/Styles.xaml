@@ -8,6 +8,7 @@
     <conv:EnumToLocalizedTextConverter x:Key="EnumText" />
     <conv:MoneyConverter x:Key="Money" />
     <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+    <conv:EstimatedMoneyConverter x:Key="EstimatedMoney" />
 
     <SolidColorBrush x:Key="StatusPaidBrush" Color="#2E7D32" />
     <SolidColorBrush x:Key="StatusOverdueBrush" Color="#C62828" />
